@@ -26,7 +26,7 @@ app.get('/registrarUsuario', (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
-app.get('/ruta', (req, res) => {
+app.get('/ruta-prueba', (req, res) => {
     res.send('<h1>Ruta protegida</h1>')
 })
 
