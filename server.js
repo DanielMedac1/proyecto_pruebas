@@ -5,6 +5,7 @@ const fs = require('fs')
 //Creación de la aplicación
 const app = express()
 app.use(express.static('public'))
+app.use(express.json());
 
 //Conexión a la base de datos
 const pool = require('./db/db_sql.js')
@@ -46,7 +47,7 @@ app.get('/consulta', (req, res) => {
 })
 
 app.post('/iniciar', async (req, res) => {
-    if (!req.params.username || !req.params.password) {
+    if (!req.body.username || !req.body.password) {
         res.send({ "res": "login failed" })
     } else {
         pool.getConnection(function (err, connection) {
@@ -54,7 +55,7 @@ app.post('/iniciar', async (req, res) => {
                 console.error('Error al obtener la conexión de la pool: ', err);
                 res.send({ "res": "login failed" });
             } else {
-                connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.params.username, req.params.password], function (error, results, fields) {
+                connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.body.username, req.body.password], function (error, results, fields) {
                     connection.release(); // Liberar la conexión después de usarla
 
                     if (error) {
