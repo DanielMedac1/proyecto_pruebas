@@ -26,6 +26,9 @@ app.get('/registrarUsuario', (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
+app.get('/ruta', (req, res) => {
+    res.send('<h1>Ruta protegida</h1>')
+})
 
 //Consultas BBDD
 app.get('/consulta', (req, res) => {

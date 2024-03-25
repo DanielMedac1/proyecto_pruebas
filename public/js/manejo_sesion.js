@@ -16,10 +16,9 @@ function iniciarSesion() {
     var mensajeError = document.getElementById('mensaje');
     mensajeError.textContent = "";
 
-    promise.always(function () {
-        if (data.res == "login true" && data.username) { //Si el login es exitoso
-            window.location.replace("/chat");
-            sessionStorage.setItem('nombreUsuario', data.username);
+    promise.always(function (data) {
+        if (data.res == "login true") { //Si el login es exitoso
+            window.location.replace("/ruta");
         } else if (data.res == "login invalid") { //Si no es exitoso
             var alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-danger';
