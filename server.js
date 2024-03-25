@@ -31,9 +31,9 @@ app.get('/consulta', (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) throw err
         console.log('Conectado a la base de datos MySQL')
-        connection.query('SELECT * FROM prueba', (err, rows) => {
+        connection.query('SELECT * FROM usuarios', (err, rows) => {
             console.log('- Consulta realizada -')
-            connection.release() // return the connection to pool
+            connection.release() // Devolver la conexión a la pool
             console.log('Desconexión de la base de datos MySQL')
 
             if (!err) {
@@ -43,6 +43,33 @@ app.get('/consulta', (req, res) => {
             }
         })
     })
+})
+
+app.post('/iniciar', async (req, res) => {
+    if (!req.params.username || !req.params.password) {
+        res.send({ "res": "login failed" })
+    } else {
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.error('Error al obtener la conexión de la pool: ', err);
+                res.send({ "res": "login failed" });
+            } else {
+                connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.params.username, req.params.password], function (error, results, fields) {
+                    connection.release(); // Liberar la conexión después de usarla
+
+                    if (error) {
+                        console.error('Error al ejecutar la consulta: ', error);
+                    } else {
+                        if (results.length > 0) {
+                            res.send({ "res": "login true"});
+                        } else {
+                            res.send({ "res": "login invalid" });
+                        }
+                    }
+                });
+            }
+        });
+    }
 })
 
 //En el caso de que vayamos a una ruta que no existe, irá a la raiz por defecto
