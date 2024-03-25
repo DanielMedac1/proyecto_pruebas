@@ -19,3 +19,14 @@ function animar(selector, animacion) {
     // Observar elemento a animar
     observer.observe(document.querySelector(selector));
 }
+/**
+ * Función para mostrar y ocultar la contraseña
+*/
+function togglePasswordVisibility() {
+    var passwordField = document.getElementById("pass");
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+    } else {
+        passwordField.type = "password";
+    }
+}

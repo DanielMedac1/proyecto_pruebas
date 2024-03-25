@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8" />
@@ -16,9 +16,12 @@
 
 <body data-bs-spy="scroll" data-bs-target=".navbar-nav" data-bs-offset="50">
     <!-- Responsive navbar-->
+    <!-- Navbar with Offcanvas on the right -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#!">CyberNiks</a>
+            <a class="navbar-brand logo-container" href="#!">
+                <img src="css/images/logo.png" alt="logo1" height="25">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
@@ -29,16 +32,18 @@
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                 </ul>
                 <div class="d-flex">
-                    <button class="btn btn-primary" type="button">Iniciar sesión</button>
-                    <button class="btn btn-primary ms-2" type="button">Registrarse</button>
+                    <button class="btn btn-primary" type="button"><a class="text-black" href="/iniciarSesion"><b>Área de clientes</b></a></button>
                 </div>
             </div>
         </div>
     </nav>
-    <div class="mt-5 py-5 bg-image-full" style="background-image: url('https://source.unsplash.com/4ulffa6qoKA/1200x800')">
-        <div class="text-center my-5 animate__slow" id="fondo2">
-            <h1 class="fw-bolder display-1">¡Bienvenido a CyberNiks!</h1>
-            <p class="text-white mb-0 display-5">Landing Page Template</p>
+
+    <div class="mt-5 py-5 bg-image-full"
+        style="background-image: url('https://source.unsplash.com/4ulffa6qoKA/1200x800')">
+        <div class="container text-center my-5 animate__slow" id="fondo2">
+            <img class="img-fluid px-4 my-5 bs-primary logo" src="css/images/logo-cabecera.png" alt="logo2"
+                maxwidth="100%">
+            <h3 class="text-primary mb-0">Seguridad, confianza y responsabilidad</h3>
         </div>
     </div>
     <div class="mt-5 py-5 bg-image-full" id="home"
