@@ -41,7 +41,7 @@ app.get('/registrarUsuario', (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
-app.get('/ruta-prueba', (req, res) => {
+app.get('/ruta-prueba', auth, (req, res) => {
     if (req.session.admin) {
         res.send('<h1>Bienvenido, administrador</h1>')
     } else if (req.session.user) {
@@ -56,7 +56,7 @@ app.get('/destruir', (req, res) => {
 })
 
 //Consultas BBDD
-app.get('/consulta', (req, res) => {
+/* app.get('/consulta', (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) throw err
         console.log('Conectado a la base de datos MySQL')
@@ -78,7 +78,7 @@ app.get('/consulta', (req, res) => {
             }
         })
     })
-})
+}) */
 
 app.post('/iniciar', async (req, res) => {
     if (!req.body.username || !req.body.password) {

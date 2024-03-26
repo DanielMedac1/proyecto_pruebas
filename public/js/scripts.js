@@ -19,4 +19,3 @@ function animar(selector, animacion) {
     // Observar elemento a animar
     observer.observe(document.querySelector(selector));
 }
-
