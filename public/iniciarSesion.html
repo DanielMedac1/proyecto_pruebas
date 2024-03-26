@@ -21,7 +21,7 @@
         <div class="card-body">
             <h3 class="card-title"><b>Iniciar sesión</b></h3>
             <div id="mensaje"></div>
-            <form action="/action_page.php">
+            <form id="formulario">
                 <div class="mb-3 mt-3">
                     <label for="user">Nombre de usuario:</label>
                     <input type="text" class="form-control" placeholder="Introduce aquí tu usuario..." id="user">
@@ -43,7 +43,7 @@
                 <div class="text-center mb-3">
                     <label>¿No tienes cuenta? <a href="/registrarUsuario">Regístrate</a>.</label>
                 </div>
-                <button style="width:100%" id="iniciar" type="button" class="btn btn-primary" onclick="iniciarSesion()">Iniciar sesión</button>
+                <button style="width:100%" id="submit" type="button" class="btn btn-primary" onclick="iniciarSesion()">Iniciar sesión</button>
             </form>
         </div>
     </div>
