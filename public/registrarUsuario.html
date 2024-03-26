@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="css/styles.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 
 <body>
@@ -18,17 +19,16 @@
     </div>
     <div class="px-4 m-5 mx-auto form-user">
         <div class="card-body">
-            <h3 class="card-title"><b>Registrarse</b></h3>
-            <div id="error">
-            </div>
+            <h3 class="text-center card-title"><b>Registrarse</b></h3>
+            <div id="mensaje"></div>
             <form id="formulario">
                 <div class="mb-3 mt-3">
                     <label for="user">Nombre de usuario:</label>
                     <input type="text" class="form-control" placeholder="Introduce aquí tu usuario..." id="user">
                 </div>
                 <div class="mb-3 mt-3">
-                    <label for="name">Nombre:</label>
-                    <input type="text" class="form-control" placeholder="Introduce aquí tu nombre..." id="user">
+                    <label for="name">E-mail:</label>
+                    <input type="email" class="form-control" placeholder="Introduce aquí tu e-mail..." id="email">
                 </div>
                 <div class="mb-3">
                     <label for="pwd">Contraseña:</label>
@@ -42,11 +42,11 @@
                 <div class="text-center mb-3">
                     <label>¿Ya tienes una cuenta? <a href="/iniciarSesion">Inicia sesión</a>.</label>
                 </div>
-                <button style="width:100%" id="submit" type="button" class="btn btn-primary">Registrarse</button>
+                <button style="width:100%" id="submit" type="button" class="btn btn-primary" onclick="registrarUsuario()">Registrarse</button>
             </form>
         </div>
     </div>
-    <script src="js/scripts.js"></script>
+    <script src="js/manejo_sesion.js"></script>
 </body>
 
 </html>
