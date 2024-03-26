@@ -147,7 +147,7 @@ function validarCamposLogin() {
     }
 }
 
-function validarCamposRegister() {
+/* function validarCamposRegister() {
     // Normas de la contraseña:
     // 1. Al menos 8 caracteres de longitud
     // 2. Al menos una letra mayúscula (A-Z)
@@ -167,8 +167,77 @@ function validarCamposRegister() {
         // Si algún campo está vacío o el email no tiene el formato correcto, deshabilitar el botón
         button.disabled = true;
     }
-}
+} */
 
+function validarCamposRegister() {
+    // Normas de la contraseña:
+    // 1. Al menos 8 caracteres de longitud
+    // 2. Al menos una letra mayúscula (A-Z)
+    // 3. Al menos una letra minúscula (a-z)
+    // 4. Al menos un dígito (0-9)
+    // 5. Al menos un carácter especial (por ejemplo, ! @ # $ % ^ & *)
+    var passLengthLi = document.getElementById("pass-length");
+    var passUpperLi = document.getElementById("pass-upper");
+    var passLowerLi = document.getElementById("pass-lower");
+    var passDigitLi = document.getElementById("pass-digit");
+    var passSpecialLi = document.getElementById("pass-special");
+
+    // Verificar si la contraseña tiene al menos 8 caracteres de longitud
+    if (contrasena.value.trim().length >= 8) {
+        passLengthLi.classList.remove("text-danger");
+        passLengthLi.classList.add("text-primary");
+    } else {
+        passLengthLi.classList.remove("text-primary");
+        passLengthLi.classList.add("text-danger");
+    }
+
+    // Verificar si la contraseña contiene al menos una letra mayúscula (A-Z)
+    if (/[A-Z]/.test(contrasena.value.trim())) {
+        passUpperLi.classList.remove("text-danger");
+        passUpperLi.classList.add("text-primary");
+    } else {
+        passUpperLi.classList.remove("text-primary");
+        passUpperLi.classList.add("text-danger");
+    }
+
+    // Verificar si la contraseña contiene al menos una letra minúscula (a-z)
+    if (/[a-z]/.test(contrasena.value.trim())) {
+        passLowerLi.classList.remove("text-danger");
+        passLowerLi.classList.add("text-primary");
+    } else {
+        passLowerLi.classList.remove("text-primary");
+        passLowerLi.classList.add("text-danger");
+    }
+
+    // Verificar si la contraseña contiene al menos un dígito (0-9)
+    if (/\d/.test(contrasena.value.trim())) {
+        passDigitLi.classList.remove("text-danger");
+        passDigitLi.classList.add("text-primary");
+    } else {
+        passDigitLi.classList.remove("text-primary");
+        passDigitLi.classList.add("text-danger");
+    }
+
+    // Verificar si la contraseña contiene al menos un carácter especial
+    if (/[!@#$%^&*_]/.test(contrasena.value.trim())) {
+        passSpecialLi.classList.remove("text-danger");
+        passSpecialLi.classList.add("text-primary");
+    } else {
+        passSpecialLi.classList.remove("text-primary");
+        passSpecialLi.classList.add("text-danger");
+    }
+
+    // Verificar si todos los campos tienen algún valor y si el email tiene el formato correcto
+    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    var passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[A-Za-z\d!@#$%^&*_]{8,}$/;
+    if (usuario.value.trim() !== "" && !/\s/.test(usuario.value.trim()) && email.value.trim() !== "" && contrasena.value.trim() !== "" && emailPattern.test(email.value.trim()) && passPattern.test(contrasena.value.trim())) {
+        // Si todos los campos tienen valor y el email tiene el formato correcto, habilitar el botón
+        button.disabled = false;
+    } else {
+        // Si algún campo está vacío o el email no tiene el formato correcto, deshabilitar el botón
+        button.disabled = true;
+    }
+}
 
 if (email) {
     usuario.addEventListener("input", validarCamposRegister);
