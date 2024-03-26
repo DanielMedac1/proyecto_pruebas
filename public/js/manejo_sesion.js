@@ -12,7 +12,7 @@ function registrarUsuario() {
         url: '/registrar',
 
         //Lo que envío (en forma de JSON)
-        data: JSON.stringify({ username: usuario, email:email, password: contrasena}),
+        data: JSON.stringify({ username: usuario, email: email, password: contrasena }),
         contentType: 'application/json;charset=UTF-8',
         dataType: 'json'
     });
@@ -38,12 +38,12 @@ function registrarUsuario() {
                 <b>Error:</b> hay algunos datos faltantes.
             </div>`
         } else if (data.res == "user exists") { //Ha faltado un parametro
-                mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
+            mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
                     </svg>
                     <b>Error:</b> el usuario ya existe. Prueba con otro nombre de usuario o e-mail.
-                </div>`    
+                </div>`
         } else { //Por si los datos son corruptos u otra cosa en vez de hacer que el cliente espere
             window.alert("Error");
         }
@@ -64,7 +64,7 @@ function iniciarSesion() {
         url: '/iniciar',
 
         //Lo que envío (en forma de JSON)
-        data: JSON.stringify({ username: usuario, password: contrasena}),
+        data: JSON.stringify({ username: usuario, password: contrasena }),
         contentType: 'application/json;charset=UTF-8',
         dataType: 'json'
     });
@@ -105,7 +105,7 @@ function handleEnterKeyPress(event) {
         document.getElementById('submit').click();
     }
 }
-document.getElementById('formulario').addEventListener('keypress', function(event) {
+document.getElementById('formulario').addEventListener('keypress', function (event) {
     handleEnterKeyPress(event);
 });
 
@@ -129,3 +129,52 @@ function togglePasswordVisibility() {
     }
 }
 
+
+var usuario = document.getElementById('user');
+var contrasena = document.getElementById('pass');
+var email = document.getElementById('email');
+var button = document.getElementById('submit');
+
+// Función para validar ambos campos
+function validarCamposLogin() {
+    // Verificar si ambos campos tienen algún valor
+    if (usuario.value.trim() !== "" && contrasena.value.trim() !== "") {
+        // Si ambos campos tienen valor, habilitar el botón
+        button.disabled = false;
+    } else {
+        // Si algún campo está vacío, deshabilitar el botón
+        button.disabled = true;
+    }
+}
+
+function validarCamposRegister() {
+    // Normas de la contraseña:
+    // 1. Al menos 8 caracteres de longitud
+    // 2. Al menos una letra mayúscula (A-Z)
+    // 3. Al menos una letra minúscula (a-z)
+    // 4. Al menos un dígito (0-9)
+    // 5. Al menos un carácter especial (por ejemplo, ! @ # $ % ^ & *)
+    var passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[A-Za-z\d!@#$%^&*_]{8,}$/;
+
+    // Expresión regular para validar el formato del email
+    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Verificar si todos los campos tienen algún valor y si el email tiene el formato correcto
+    if (usuario.value.trim() !== "" && email.value.trim() !== "" && contrasena.value.trim() !== "" && emailPattern.test(email.value.trim()) && passPattern.test(contrasena.value.trim())) {
+        // Si todos los campos tienen valor y el email tiene el formato correcto, habilitar el botón
+        button.disabled = false;
+    } else {
+        // Si algún campo está vacío o el email no tiene el formato correcto, deshabilitar el botón
+        button.disabled = true;
+    }
+}
+
+
+if (email) {
+    usuario.addEventListener("input", validarCamposRegister);
+    email.addEventListener("input", validarCamposRegister);
+    contrasena.addEventListener("input", validarCamposRegister);
+} else {
+    usuario.addEventListener("input", validarCamposLogin);
+    contrasena.addEventListener("input", validarCamposLogin);
+}
