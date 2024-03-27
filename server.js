@@ -98,7 +98,7 @@ app.post('/iniciar', async (req, res) => {
                         if (results.length > 0) {
                             if (results.length > 0) {
                                 const esAdmin = parseInt(results[0].admin);
-                                if(esAdmin === 1){
+                                if (esAdmin === 1) {
                                     req.session.admin = true;
                                     console.log("Entró un administrador")
                                 } else {
@@ -118,7 +118,7 @@ app.post('/iniciar', async (req, res) => {
     }
 })
 
-app.post('/registrar', async (req, res) => {
+/* app.post('/registrar', async (req, res) => {
     if (!req.body.username || !req.body.password || !req.body.email) {
         res.send({ "res": "register failed" })
     } else {
@@ -148,7 +148,62 @@ app.post('/registrar', async (req, res) => {
             }
         });
     }
-})
+}) */
+
+app.post('/registrar', async (req, res) => {
+    const { username, password, email } = req.body;
+
+    if (!username || !password || !email) {
+        sendResponse(res, "register failed");
+        return;
+    }
+
+    if (username.length > 30 || username.length < 5 || username.includes(' ')) {
+        sendResponse(res, "invalid username");
+        return;
+    }
+
+    if (email.length > 75 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        sendResponse(res, "invalid email");
+        return;
+    }
+
+    if (password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
+        sendResponse(res, "invalid password");
+        return;
+    }
+
+    pool.getConnection(function (err, connection) {
+        if (err) {
+            console.error('Error al obtener la conexión de la pool: ', err);
+            sendResponse(res, "register failed");
+            return;
+        } else {
+            connection.query('INSERT INTO usuarios(username, email, password, admin) VALUES (?,?,?, false)', [username, email, password], function (error, results, fields) {
+                connection.release(); // Liberar la conexión después de usarla
+
+                if (error) {
+                    if (error.code === 'ER_DUP_ENTRY') {
+                        sendResponse(res, "user exists");
+                    } else {
+                        console.error('Error al ejecutar la consulta: ', error);
+                        sendResponse(res, "register failed");
+                    }
+                } else {
+                    if (results.affectedRows > 0) {
+                        sendResponse(res, "register true");
+                    } else {
+                        sendResponse(res, "register invalid");
+                    }
+                }
+            });
+        }
+    });
+});
+
+function sendResponse(res, message) {
+    res.send({ "res": message });
+}
 
 
 

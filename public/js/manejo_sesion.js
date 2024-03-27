@@ -44,6 +44,27 @@ function registrarUsuario() {
                     </svg>
                     <b>Error:</b> el usuario ya existe. Prueba con otro nombre de usuario o e-mail.
                 </div>`
+        } else if (data.res == "invalid username") {
+            mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                    </svg>
+                    <b>Error:</b> el nombre del usuario es incorrecto.
+                </div>`
+        } else if (data.res == "invalid email") {
+            mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                        </svg>
+                        <b>Error:</b> el e-mail es incorrecto.
+                    </div>`
+        } else if (data.res == "invalid password") {
+            mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                            </svg>
+                            <b>Error:</b> la contraseña es incorrecta.
+                        </div>`
         } else { //Por si los datos son corruptos u otra cosa en vez de hacer que el cliente espere
             window.alert("Error");
         }
@@ -138,7 +159,7 @@ var button = document.getElementById('submit');
 // Función para validar ambos campos
 function validarCamposLogin() {
     // Verificar si ambos campos tienen algún valor
-    if (usuario.value.trim() !== "" && contrasena.value.trim() !== "") {
+    if (usuario.value.trim() !== "" && !/\s/.test(usuario.value.trim()) && usuario.value.trim().length > 5 && contrasena.value.trim() !== "") {
         // Si ambos campos tienen valor, habilitar el botón
         button.disabled = false;
     } else {
@@ -219,7 +240,7 @@ function validarCamposRegister() {
     }
 
     // Verificar si la contraseña contiene al menos un carácter especial
-    if (/[!@#$%^&*_]/.test(contrasena.value.trim())) {
+    if (/[!@#$%^&*_.]/.test(contrasena.value.trim())) {
         passSpecialLi.classList.remove("text-danger");
         passSpecialLi.classList.add("text-primary");
     } else {
@@ -229,8 +250,8 @@ function validarCamposRegister() {
 
     // Verificar si todos los campos tienen algún valor y si el email tiene el formato correcto
     var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    var passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[A-Za-z\d!@#$%^&*_]{8,}$/;
-    if (usuario.value.trim() !== "" && !/\s/.test(usuario.value.trim()) && email.value.trim() !== "" && contrasena.value.trim() !== "" && emailPattern.test(email.value.trim()) && passPattern.test(contrasena.value.trim())) {
+    var passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/;
+    if (usuario.value.trim() !== "" && !/\s/.test(usuario.value.trim()) && email.value.trim() !== "" && contrasena.value.trim() !== "" && emailPattern.test(email.value.trim()) && passPattern.test(contrasena.value.trim()) && usuario.value.trim().length > 5) {
         // Si todos los campos tienen valor y el email tiene el formato correcto, habilitar el botón
         button.disabled = false;
     } else {
