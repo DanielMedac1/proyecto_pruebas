@@ -8,6 +8,7 @@ const app = express()
 
 //Para los ficheros HTML
 app.use(express.static('public'))
+app.use('/styles', express.static(__dirname + '/public/css'));
 
 //Para los ficheros EJS
 app.set('views', 'views')
