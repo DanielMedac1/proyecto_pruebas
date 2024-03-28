@@ -5,7 +5,15 @@ var session = require('express-session');
 
 //Creación de la aplicación
 const app = express()
+
+//Para los ficheros HTML
 app.use(express.static('public'))
+
+//Para los ficheros EJS
+app.set('views', 'views')
+app.set('view engine', 'ejs')
+
+
 app.use(express.json());
 app.use(session({
     secret: 'secret',
@@ -43,9 +51,9 @@ app.get('/registrarUsuario', (req, res) => {
 })
 app.get('/ruta-prueba', auth, (req, res) => {
     if (req.session.admin) {
-        res.send('<h1>Bienvenido, administrador</h1>')
+        res.render('admin/prueba-admin');
     } else if (req.session.user) {
-        res.send('<h1>Bienvenido, usuario</h1>')
+        res.render('usuario/prueba-usuario');
     } else {
         res.redirect('/iniciarSesion');
     }
