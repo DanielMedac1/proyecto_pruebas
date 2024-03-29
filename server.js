@@ -52,14 +52,14 @@ app.get('/registrarUsuario', (req, res) => {
 })
 app.get('/ruta-prueba', auth, (req, res) => {
     if (req.session.admin) {
-        res.render('admin/prueba-admin');
+        res.render('admin/prueba-admin', { usuario: req.session.info });
     } else if (req.session.user) {
-        res.render('usuario/prueba-usuario');
+        res.render('usuario/prueba-usuario', { usuario: req.session.info });
     } else {
         res.redirect('/iniciarSesion');
     }
 })
-app.get('/destruir', (req, res) => {
+app.get('/destroy-session', (req, res) => {
     req.session.destroy();
     res.redirect('/iniciarSesion');
 })
@@ -116,6 +116,12 @@ app.post('/iniciar', async (req, res) => {
                                 }
 
                             }
+                            const usuario = {
+                                username: results[0].username,
+                                email: results[0].email,
+                                password: results[0].password
+                            }
+                            req.session.info = usuario;
                             res.send({ "res": "login true" });
                         } else {
                             res.send({ "res": "login invalid" });
