@@ -33,6 +33,7 @@ var auth = function (req, res, next) {
 
 //Conexión a la base de datos
 const pool = require('./db/db_sql.js')
+const uri = require('./db/db_mongo.js')
 
 //Rutas
 app.get('/', (req, res) => {
