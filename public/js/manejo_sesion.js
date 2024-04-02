@@ -80,13 +80,18 @@ function iniciarSesion() {
     var contrasena = document.getElementById('pass').value;
     var remember = document.getElementById('remember');
 
+    var recordarPass = false;
+    if (remember.checked) {
+        recordarPass = true;
+    }
+
     //HAGO LA PETICION AL SERVIDOR Y GUARDO LA RESPUESTA EN LA VARIABLE PROMISE
     var promise = $.ajax({
         type: 'POST',
         url: '/iniciar',
 
         //Lo que envío (en forma de JSON)
-        data: JSON.stringify({ username: usuario, password: contrasena, remember: remember }),
+        data: JSON.stringify({ username: usuario, password: contrasena, remember: recordarPass }),
         contentType: 'application/json;charset=UTF-8',
         dataType: 'json'
     });

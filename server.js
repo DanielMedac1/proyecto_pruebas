@@ -2,6 +2,7 @@
 const express = require('express')
 const fs = require('fs')
 var session = require('express-session');
+const crypto = require('crypto');
 
 //Creación de la aplicación
 const app = express()
@@ -123,10 +124,24 @@ app.post('/iniciar', async (req, res) => {
                                 password: results[0].password
                             }
                             req.session.info = usuario;
-                            if (remember.checked) {
-                                
+                            if (req.body.remember) {
+                                console.log("recordar usuario");
+                                const token = crypto.randomBytes(32).toString('hex');
+                                // Almacenar el token en la base de datos junto con el usuario correspondiente
+                                connection.query('UPDATE usuarios SET remember_token = ? WHERE username = ?', [token, req.body.username], function (error, results, fields) {
+                                    if (error) {
+                                        console.error('Error al almacenar el token de sesión: ', error);
+                                    } else {
+                                        // Establecer una cookie con el token
+                                        res.cookie('rememberToken', token, { maxAge: 604800000 }); // 7 días en milisegundos
+                                        res.send({ "res": "login true" });
+                                        return;
+                                    }
+                                });
+                            } else {
+                                res.send({ "res": "login true" });
                             }
-                            res.send({ "res": "login true" });
+
                         } else {
                             res.send({ "res": "login invalid" });
                         }
@@ -227,11 +242,52 @@ function sendResponse(res, message) {
 
 
 //En el caso de que vayamos a una ruta que no existe, irá a la raiz por defecto
-app.use((req, res) => {
-    res.redirect('/');
+app.use((req, res, next) => {
+    // Verificar si existe la cookie rememberToken
+    console.log("Verificando la existencia de la cookie rememberToken");
+    if (req.cookies.rememberToken) {
+        const token = req.cookies.rememberToken;
+
+        // Buscar el usuario correspondiente en la base de datos usando el token
+        console.log("Buscando usuario correspondiente en la base de datos usando el token:", token);
+        connection.query('SELECT * FROM usuarios WHERE remember_token = ?', [token], function (error, results, fields) {
+            if (error) {
+                console.error('Error al verificar la cookie rememberToken:', error);
+                next(); // Continuar con la siguiente middleware en caso de error
+            } else {
+                if (results.length > 0) {
+                    console.log("Usuario encontrado:", results[0].username);
+                    const esAdmin = parseInt(results[0].admin);
+                    if (esAdmin === 1) {
+                        req.session.admin = true;
+                        console.log("Entró un administrador");
+                    } else {
+                        req.session.user = true;
+                        console.log("Entró un usuario");
+                    }
+
+                    const usuario = {
+                        username: results[0].username,
+                        email: results[0].email,
+                        password: results[0].password
+                    }
+                    req.session.info = usuario;
+                    console.log("Sesión de usuario establecida:", usuario);
+                } else {
+                    console.log("Usuario no encontrado para el token:", token);
+                }
+                // Continuar con la siguiente middleware
+                next();
+            }
+        });
+    } else {
+        // Si no existe la cookie rememberToken, continuar con la siguiente middleware
+        console.log("No se encontró la cookie rememberToken");
+        next();
+    }
 });
 
-app.use(express.json());
+
 
 
 //Servidor
