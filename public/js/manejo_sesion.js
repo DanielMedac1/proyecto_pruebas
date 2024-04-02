@@ -78,6 +78,7 @@ function registrarUsuario() {
 function iniciarSesion() {
     var usuario = document.getElementById('user').value;
     var contrasena = document.getElementById('pass').value;
+    var remember = document.getElementById('remember');
 
     //HAGO LA PETICION AL SERVIDOR Y GUARDO LA RESPUESTA EN LA VARIABLE PROMISE
     var promise = $.ajax({
@@ -85,7 +86,7 @@ function iniciarSesion() {
         url: '/iniciar',
 
         //Lo que envío (en forma de JSON)
-        data: JSON.stringify({ username: usuario, password: contrasena }),
+        data: JSON.stringify({ username: usuario, password: contrasena, remember: remember }),
         contentType: 'application/json;charset=UTF-8',
         dataType: 'json'
     });

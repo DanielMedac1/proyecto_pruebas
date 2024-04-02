@@ -123,6 +123,9 @@ app.post('/iniciar', async (req, res) => {
                                 password: results[0].password
                             }
                             req.session.info = usuario;
+                            if (remember.checked) {
+                                
+                            }
                             res.send({ "res": "login true" });
                         } else {
                             res.send({ "res": "login invalid" });
@@ -174,7 +177,7 @@ app.post('/registrar', async (req, res) => {
         return;
     }
 
-    if (username.length > 30 || username.length < 5 || username.includes(' ')) {
+    if (username.length > 30 || username.length <= 5 || username.includes(' ')) {
         sendResponse(res, "invalid username");
         return;
     }
@@ -227,6 +230,9 @@ function sendResponse(res, message) {
 app.use((req, res) => {
     res.redirect('/');
 });
+
+app.use(express.json());
+
 
 //Servidor
 const port = 3005;

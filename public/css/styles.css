@@ -2044,7 +2044,7 @@ progress {
   opacity: 1;
 }
 .form-control:disabled {
-  background-color: #e9ecef;
+  background-color: #000000;
   opacity: 1;
 }
 .form-control::file-selector-button {
@@ -2052,8 +2052,8 @@ progress {
   margin: -0.375rem -0.75rem;
   -webkit-margin-end: 0.75rem;
           margin-inline-end: 0.75rem;
-  color: #212529;
-  background-color: #e9ecef;
+  color: #bbbbbb;
+  background-color: #000000;
   pointer-events: none;
   border-color: inherit;
   border-style: solid;
