@@ -10877,6 +10877,12 @@ textarea.form-control-lg {
   }
 }
 
+@media (max-width: 576px) {
+  .dashboard-bar {
+    max-height: 48.417px;;
+  }
+}
+
 .mostrar-pass {
   cursor: pointer;
 }
