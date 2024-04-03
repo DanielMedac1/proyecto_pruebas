@@ -4,6 +4,7 @@ const fs = require('fs')
 var session = require('express-session');
 const cookieParser = require('cookie-parser')
 const crypto = require('crypto');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 //Creación de la aplicación
 const app = express()
@@ -16,14 +17,23 @@ app.use('/styles', express.static(__dirname + '/public/css'));
 app.set('views', 'views')
 app.set('view engine', 'ejs')
 
+const store = new MongoDBStore({
+    uri: 'mongodb+srv://infocyberniks:jesucristoNuestroSeñor1999@cluster0.pvhjqm8.mongodb.net/CyberNiks?retryWrites=true&w=majority&appName=Cluster0',
+    collection: 'sessions'
+});
 
 app.use(express.json());
 app.use(cookieParser())
 app.use(session({
     secret: 'TtwDnEKvK10E9to',
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }
+    saveUninitialized: false,
+    store: store,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 semana
+        name: 'session_id',
+        //secure: true
+    }
 }))
 
 var auth = function (req, res, next) {
@@ -129,6 +139,14 @@ app.post('/iniciar', async (req, res) => {
                             req.session.info = usuario;
                             if (req.body.remember) {
                                 console.log("Recordar usuario")
+                                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 7; // Duración de la sesión si se recuerda al usuario
+                                req.session.save(function (err) {
+                                    if (err) {
+                                        console.error('Error al guardar la sesión: ', err);
+                                    } else {
+                                        console.log('Sesión guardada');
+                                    }
+                                });
                             }
                             res.send({ "res": "login true" });
 
