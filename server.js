@@ -112,7 +112,7 @@ app.post('/iniciar', async (req, res) => {
         pool.getConnection(function (err, connection) {
             if (err) {
                 console.error('Error al obtener la conexión de la pool: ', err);
-                res.send({ "res": "login failed" });
+                res.send({ "res": "login error" });
             } else {
                 connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.body.username, req.body.password], function (error, results, fields) {
                     connection.release(); // Liberar la conexión después de usarla
@@ -131,11 +131,59 @@ app.post('/iniciar', async (req, res) => {
                                     console.log("Entró un usuario")
                                 }
 
+                                const fecha = results[0].fecha;
+                                var dia = fecha.getDate();
+                                var numMes = fecha.getMonth() + 1;
+                                var nombreMes;
+                                var anio = fecha.getFullYear();
+
+                                switch (numMes) {
+                                    case 1:
+                                        nombreMes = 'Enero';
+                                        break;
+                                    case 2:
+                                        nombreMes = 'Febrero';
+                                        break;
+                                    case 3:
+                                        nombreMes = 'Marzo';
+                                        break;
+                                    case 4:
+                                        nombreMes = 'Abril';
+                                        break;
+                                    case 5:
+                                        nombreMes = 'Mayo';
+                                        break;
+                                    case 6:
+                                        nombreMes = 'Junio';
+                                        break;
+                                    case 7:
+                                        nombreMes = 'Julio';
+                                        break;
+                                    case 8:
+                                        nombreMes = 'Agosto';
+                                        break;
+                                    case 9:
+                                        nombreMes = 'Septiembre';
+                                        break;
+                                    case 10:
+                                        nombreMes = 'Octubre';
+                                        break;
+                                    case 11:
+                                        nombreMes = 'Noviembre';
+                                        break;
+                                    case 12:
+                                        nombreMes = 'Diciembre';
+                                        break;
+                                }
+
                             }
                             const usuario = {
                                 username: results[0].username,
                                 email: results[0].email,
-                                password: results[0].password
+                                password: results[0].password,
+                                dia: dia,
+                                mes: nombreMes,
+                                anio: anio
                             }
                             req.session.info = usuario;
                             if (req.body.remember) {
@@ -222,7 +270,7 @@ app.post('/registrar', async (req, res) => {
             sendResponse(res, "register failed");
             return;
         } else {
-            connection.query('INSERT INTO usuarios(username, email, password, admin) VALUES (?,?,?, false)', [username, email, password], function (error, results, fields) {
+            connection.query('INSERT INTO usuarios(username, email, password, admin, fecha) VALUES (?,?,?, false, CURDATE())', [username, email, password], function (error, results, fields) {
                 connection.release(); // Liberar la conexión después de usarla
 
                 if (error) {

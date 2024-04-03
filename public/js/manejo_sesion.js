@@ -21,9 +21,11 @@ function registrarUsuario() {
     mensaje.textContent = "";
 
     promise.always(function (data) {
+        mostrarSpinner();
         if (data.res == "register true") { //Si el login es exitoso
             window.location.replace("/iniciarSesion");
         } else if (data.res == "register invalid") { //Si no es exitoso
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                     <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -31,6 +33,7 @@ function registrarUsuario() {
                 <b>Error:</b> se ha producido un problema al registrar el usuario.
             </div>`
         } else if (data.res == "register failed") { //Ha faltado un parametro
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                     <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -38,6 +41,7 @@ function registrarUsuario() {
                 <b>Error:</b> hay algunos datos faltantes.
             </div>`
         } else if (data.res == "user exists") { //Ha faltado un parametro
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -45,6 +49,7 @@ function registrarUsuario() {
                     <b>Error:</b> el usuario ya existe. Prueba con otro nombre de usuario o e-mail.
                 </div>`
         } else if (data.res == "invalid username") {
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -52,6 +57,7 @@ function registrarUsuario() {
                     <b>Error:</b> el nombre del usuario es incorrecto.
                 </div>`
         } else if (data.res == "invalid email") {
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                             <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -59,6 +65,7 @@ function registrarUsuario() {
                         <b>Error:</b> el e-mail es incorrecto.
                     </div>`
         } else if (data.res == "invalid password") {
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                                 <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -66,6 +73,7 @@ function registrarUsuario() {
                             <b>Error:</b> la contraseña es incorrecta.
                         </div>`
         } else { //Por si los datos son corruptos u otra cosa en vez de hacer que el cliente espere
+            ocultarSpinner();
             window.alert("Error");
         }
     });
@@ -100,9 +108,11 @@ function iniciarSesion() {
     mensaje.textContent = "";
 
     promise.always(function (data) {
+        mostrarSpinner();
         if (data.res == "login true") { //Si el login es exitoso
             window.location.replace("/ruta-prueba");
         } else if (data.res == "login invalid") { //Si no es exitoso
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                     <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -110,13 +120,23 @@ function iniciarSesion() {
                 <b>Error:</b> el usuario no existe o la contraseña es incorrecta.
             </div>`
         } else if (data.res == "login failed") { //Ha faltado un parametro
+            ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                     <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
                 </svg>
                 <b>Error:</b> hay algunos datos faltantes.
             </div>`
+        } else if (data.res == "login error") { //Ha faltado un parametro
+            ocultarSpinner();
+            mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <b>Error:</b> se ha producido un fallo. Intentalo más tarde.
+            </div>`
         } else { //Por si los datos son corruptos u otra cosa en vez de hacer que el cliente espere
+            ocultarSpinner();
             window.alert("Error");
         }
     });
@@ -273,4 +293,16 @@ if (email) {
 } else {
     usuario.addEventListener("input", validarCamposLogin);
     contrasena.addEventListener("input", validarCamposLogin);
+}
+
+function mostrarSpinner() {
+    var submit = document.getElementById("submit");
+    submit.disabled = true;
+    submit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+}
+
+function ocultarSpinner() {
+    var submit = document.getElementById("submit");
+    submit.disabled = false;
+    submit.innerHTML = 'Iniciar sesión';
 }
