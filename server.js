@@ -17,7 +17,7 @@ app.use('/styles', express.static(__dirname + '/public/css'));
 app.set('views', 'views')
 app.set('view engine', 'ejs')
 
-const store = new MongoDBStore({
+const storeSession = new MongoDBStore({
     uri: 'mongodb+srv://infocyberniks:jesucristoNuestroSeñor1999@cluster0.pvhjqm8.mongodb.net/CyberNiks?retryWrites=true&w=majority&appName=Cluster0',
     collection: 'sessions'
 });
@@ -28,13 +28,13 @@ app.use(session({
     secret: 'TtwDnEKvK10E9to',
     resave: false,
     saveUninitialized: false,
-    store: store,
+    rolling: true,
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 semana
         name: 'session_id',
-        //secure: true
+        httpOnly: true,
+        //secure: true //ESTO PARA CUANDO LO SUBAMOS AL RENDER
     }
-}))
+}));
 
 var auth = function (req, res, next) {
     if (req.session && (req.session.admin || req.session.user)) {
@@ -76,6 +76,7 @@ app.get('/ruta-prueba', auth, (req, res) => {
 })
 app.get('/destroy-session', (req, res) => {
     req.session.destroy();
+    res.clearCookie('connect.sid', { path: '/' });
     res.redirect('/iniciarSesion');
 })
 
