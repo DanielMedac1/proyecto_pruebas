@@ -41,7 +41,7 @@ var auth = function (req, res, next) {
         return next();
     } else {
         console.log("Reririge")
-        res.redirect('/iniciarSesion');
+        res.redirect('/login');
     }
 }
 
@@ -55,29 +55,35 @@ app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
-app.get('/iniciarSesion', (req, res) => {
+app.get('/login', (req, res) => {
     var contenido = fs.readFileSync('public/iniciarSesion.html', 'utf8')
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
-app.get('/registrarUsuario', (req, res) => {
+app.get('/register', (req, res) => {
     var contenido = fs.readFileSync('public/registrarUsuario.html', 'utf8')
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
-app.get('/ruta-prueba', auth, (req, res) => {
-    if (req.session.admin) {
-        res.render('admin/prueba-admin', { usuario: req.session.info });
-    } else if (req.session.user) {
-        res.render('usuario/prueba-usuario', { usuario: req.session.info });
+app.get('/profile', auth, (req, res) => {
+    if (req.session.admin || req.session.user) {
+        res.render('profile-info', { usuario: req.session.info });
     } else {
-        res.redirect('/iniciarSesion');
+        res.redirect('/login');
     }
 })
-app.get('/destroy-session', (req, res) => {
+app.get('/home', auth, (req, res) => {
+    if (req.session.admin) {
+        res.render('admin/home-admin', { usuario: req.session.info });
+    } else if (req.session.user) {
+        res.render('usuario/home-admin', { usuario: req.session.info });
+    } else {
+        res.redirect('/login');
+    }
+})
+app.post('/destroy-session', (req, res) => {
     req.session.destroy();
     res.clearCookie('connect.sid', { path: '/' });
-    res.redirect('/iniciarSesion');
 })
 
 //Consultas BBDD
@@ -300,7 +306,9 @@ function sendResponse(res, message) {
 
 //En el caso de que vayamos a una ruta que no existe, irá a la raiz por defecto
 app.use((req, res, next) => {
-    res.redirect('/');
+    var contenido = fs.readFileSync('public/notFound.html', 'utf8')
+    res.setHeader('Content-Type', 'text/html')
+    res.status(404).send(contenido);
 });
 
 

@@ -23,7 +23,7 @@ function registrarUsuario() {
     promise.always(function (data) {
         mostrarSpinner();
         if (data.res == "register true") { //Si el login es exitoso
-            window.location.replace("/iniciarSesion");
+            window.location.replace("/login");
         } else if (data.res == "register invalid") { //Si no es exitoso
             ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
@@ -110,7 +110,7 @@ function iniciarSesion() {
     promise.always(function (data) {
         mostrarSpinner();
         if (data.res == "login true") { //Si el login es exitoso
-            window.location.replace("/ruta-prueba");
+            window.location.replace("/home");
         } else if (data.res == "login invalid") { //Si no es exitoso
             ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">

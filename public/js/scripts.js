@@ -19,3 +19,15 @@ function animar(selector, animacion) {
     // Observar elemento a animar
     observer.observe(document.querySelector(selector));
 }
+
+function cerrarSesion() {
+    var promise = $.ajax({
+        type: 'POST',
+        url: '/destroy-session',
+    });
+
+    promise.always(function (data) {
+        window.location.replace("/login");
+    });
+
+}
