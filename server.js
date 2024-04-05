@@ -5,6 +5,7 @@ var session = require('express-session');
 const cookieParser = require('cookie-parser')
 const crypto = require('crypto');
 const MongoDBStore = require('connect-mongodb-session')(session);
+const enviarMail = require('./email-controller.js');
 
 //Creación de la aplicación
 const app = express()
@@ -288,6 +289,11 @@ app.post('/registrar', async (req, res) => {
                     }
                 } else {
                     if (results.affectedRows > 0) {
+                        enviarMail(
+                            email,
+                            "Prueba de email con Bootstrap",
+                            "Este es el texto del correo."
+                        );
                         sendResponse(res, "register true");
                     } else {
                         sendResponse(res, "register invalid");

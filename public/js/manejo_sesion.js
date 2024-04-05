@@ -23,7 +23,7 @@ function registrarUsuario() {
     promise.always(function (data) {
         mostrarSpinner();
         if (data.res == "register true") { //Si el login es exitoso
-            window.location.replace("/login");
+            window.location.replace("/login?reg=true");
         } else if (data.res == "register invalid") { //Si no es exitoso
             ocultarSpinner();
             mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
@@ -305,4 +305,19 @@ function ocultarSpinner() {
     var submit = document.getElementById("submit");
     submit.disabled = false;
     submit.innerHTML = 'Iniciar sesión';
+}
+
+var urlString = window.location.href;
+var url = new URL(urlString);
+
+var reg = url.searchParams.get('reg');
+if (reg == "true") {
+    var mensaje = document.getElementById('mensaje');
+    mensaje.textContent = "";
+    mensaje.innerHTML = `<div class="mt-2 border-success text-center alert alert-success p-2" id="mensaje">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                            </svg>
+                            <b>Éxito:</b> se ha enviado un e-mail a tu dirección de correo electrónico para confirmar tu usuario.
+                        </div>`
 }
