@@ -14,7 +14,7 @@ async function confirmationMail(receptor, token) {
         from: 'josejuanab@gmail.com',
         to: receptor,
         subject: "Confirma tu cuenta",
-        text: `Confirma tu cuenta aquí: localhost:3005/confirm/${token}`
+        text: `Confirma tu cuenta aquí: localhost:3005/confirm?token=${token}`
     }
 
     const transporter = nodemailer.createTransport(config);

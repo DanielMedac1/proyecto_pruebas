@@ -5,6 +5,7 @@ var session = require('express-session');
 const cookieParser = require('cookie-parser')
 const crypto = require('crypto');
 const MongoDBStore = require('connect-mongodb-session')(session);
+const confirmationMail = require('./email-controller.js');
 
 //Creación de la aplicación
 const app = express()
@@ -225,39 +226,7 @@ app.post('/iniciar', async (req, res) => {
             }
         });
     }
-})
-
-/* app.post('/registrar', async (req, res) => {
-    if (!req.body.username || !req.body.password || !req.body.email) {
-        res.send({ "res": "register failed" })
-    } else {
-        pool.getConnection(function (err, connection) {
-            if (err) {
-                console.error('Error al obtener la conexión de la pool: ', err);
-                res.send({ "res": "register failed" });
-            } else {
-                connection.query('INSERT INTO usuarios(username, email, password, admin) VALUES (?,?,?, false)', [req.body.username, req.body.email, req.body.password], function (error, results, fields) {
-                    connection.release(); // Liberar la conexión después de usarla
-
-                    if (error) {
-                        if (error.code === 'ER_DUP_ENTRY') {
-                            // Manejar el error de clave duplicada aquí
-                            res.send({ "res": "user exists" });
-                        } else {
-                            console.error('Error al ejecutar la consulta: ', error);
-                        }
-                    } else {
-                        if (results.affectedRows > 0) {
-                            res.send({ "res": "register true" });
-                        } else {
-                            res.send({ "res": "register invalid" });
-                        }
-                    }
-                });
-            }
-        });
-    }
-}) */
+});
 
 function generateToken(length = 32) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -310,6 +279,11 @@ app.post('/registrar', async (req, res) => {
                     }
                 } else {
                     if (results.affectedRows > 0) {
+                        const usuario = {
+                            username: username,
+                            email: email,
+                        }
+                        confirmationMail(email, confirmToken);
                         sendResponse(res, "register true");
                     } else {
                         sendResponse(res, "register invalid");
