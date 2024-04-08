@@ -5,7 +5,6 @@ var session = require('express-session');
 const cookieParser = require('cookie-parser')
 const crypto = require('crypto');
 const MongoDBStore = require('connect-mongodb-session')(session);
-const enviarMail = require('./email-controller.js');
 
 //Creación de la aplicación
 const app = express()
@@ -77,7 +76,7 @@ app.get('/home', auth, (req, res) => {
     if (req.session.admin) {
         res.render('admin/home-admin', { usuario: req.session.info });
     } else if (req.session.user) {
-        res.render('usuario/home-admin', { usuario: req.session.info });
+        res.render('usuario/home-user', { usuario: req.session.info });
     } else {
         res.redirect('/login');
     }
@@ -112,14 +111,18 @@ app.post('/destroy-session', (req, res) => {
     })
 }) */
 
+function sendResponse(res, message) {
+    res.send({ "res": message });
+}
+
 app.post('/iniciar', async (req, res) => {
     if (!req.body.username || !req.body.password) {
-        res.send({ "res": "login failed" })
+        sendResponse(res, "login failed");
     } else {
         pool.getConnection(function (err, connection) {
             if (err) {
                 console.error('Error al obtener la conexión de la pool: ', err);
-                res.send({ "res": "login error" });
+                sendResponse(res, "login error");
             } else {
                 connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.body.username, req.body.password], function (error, results, fields) {
                     connection.release(); // Liberar la conexión después de usarla
@@ -129,6 +132,10 @@ app.post('/iniciar', async (req, res) => {
                     } else {
                         if (results.length > 0) {
                             if (results.length > 0) {
+                                if (results[0].is_confirmed === 0 || results[0].confirm_token !== null) {
+                                    sendResponse(res, "login unconfirmed");
+                                    return;
+                                }
                                 const esAdmin = parseInt(results[0].admin);
                                 if (esAdmin === 1) {
                                     req.session.admin = true;
@@ -204,10 +211,10 @@ app.post('/iniciar', async (req, res) => {
                                     }
                                 });
                             }
-                            res.send({ "res": "login true" });
+                            sendResponse(res, "login true");
 
                         } else {
-                            res.send({ "res": "login invalid" });
+                            sendResponse(res, "login invalid");
                         }
                     }
                 });
@@ -248,6 +255,15 @@ app.post('/iniciar', async (req, res) => {
     }
 }) */
 
+function generateToken(length = 32) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let token = '';
+    for (let i = 0; i < length; i++) {
+        token += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return token;
+}
+
 app.post('/registrar', async (req, res) => {
     const { username, password, email } = req.body;
 
@@ -277,7 +293,8 @@ app.post('/registrar', async (req, res) => {
             sendResponse(res, "register failed");
             return;
         } else {
-            connection.query('INSERT INTO usuarios(username, email, password, admin, fecha) VALUES (?,?,?, false, CURDATE())', [username, email, password], function (error, results, fields) {
+            const confirmToken = generateToken();
+            connection.query('INSERT INTO usuarios(username, email, password, admin, fecha, confirm_token) VALUES (?,?,?, false, CURDATE(), ?)', [username, email, password, confirmToken], function (error, results, fields) {
                 connection.release(); // Liberar la conexión después de usarla
 
                 if (error) {
@@ -289,11 +306,6 @@ app.post('/registrar', async (req, res) => {
                     }
                 } else {
                     if (results.affectedRows > 0) {
-                        enviarMail(
-                            email,
-                            "Prueba de email con Bootstrap",
-                            "Este es el texto del correo."
-                        );
                         sendResponse(res, "register true");
                     } else {
                         sendResponse(res, "register invalid");
@@ -304,9 +316,37 @@ app.post('/registrar', async (req, res) => {
     });
 });
 
-function sendResponse(res, message) {
-    res.send({ "res": message });
-}
+app.get('/confirm', (req, res) => {
+    const { token } = req.query;
+    pool.getConnection((err, connection) => {
+        // Buscar el usuario con el token de confirmación en la base de datos
+        connection.query('SELECT * FROM usuarios WHERE confirm_token = ?', [token], (err, result) => {
+            connection.release();
+            if (err) {
+                console.error(err);
+                res.status(500).send('Error al confirmar el usuario.');
+            } else {
+                if (result.length === 0) {
+                    var contenido = fs.readFileSync('public/notFound.html', 'utf8')
+                    res.setHeader('Content-Type', 'text/html')
+                    res.status(404).send(contenido);
+                } else {
+                    // Actualizar el estado de confirmación del usuario
+                    connection.query('UPDATE usuarios SET is_confirmed = 1, confirm_token = NULL WHERE username = ?', [result[0].username], (err, updateResult) => {
+                        if (err) {
+                            console.error(err);
+                            res.status(500).send('Error al confirmar el usuario.');
+                        } else {
+                            var contenido = fs.readFileSync('public/passwordConfirmed.html', 'utf8')
+                            res.setHeader('Content-Type', 'text/html')
+                            res.send(contenido);
+                        }
+                    });
+                }
+            }
+        });
+    })
+});
 
 
 

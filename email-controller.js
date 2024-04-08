@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-async function enviarMail(receptor, asunto, texto) {
+async function confirmationMail(receptor, token) {
     const config = {
         host: 'smtp.gmail.com',
         port: 587,
@@ -13,8 +13,8 @@ async function enviarMail(receptor, asunto, texto) {
     const mensaje = {
         from: 'josejuanab@gmail.com',
         to: receptor,
-        subject: asunto,
-        text: texto
+        subject: "Confirma tu cuenta",
+        text: `Confirma tu cuenta aquí: localhost:3005/confirm/${token}`
     }
 
     const transporter = nodemailer.createTransport(config);
@@ -25,4 +25,4 @@ async function enviarMail(receptor, asunto, texto) {
 }
 
 
-module.exports = enviarMail;
+module.exports = confirmationMail;
