@@ -11,13 +11,74 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="css/styles.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 </head>
+
 <body>
-    <div class="container">
-        <p>
-            <h1 class="pt-3">¡Bienvenido, <%= usuario.username %>!</h1>
-            <h5>Se unio el <%= usuario.dia %> de <%= usuario.mes %> del <%= usuario.anio %></h5>
-        </p>
+    <div class="container pt-3">
+        <nav class="navbar navbar-expand-sm navbar-dark border-bottom">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/home">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-chevron-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+                    </svg>
+                </a>
+            </div>
+        </nav>
+        <div class="text-center">
+            <h1 class="pt-3">Mi perfil</h1>
+            <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" fill="grey" class="bi bi-person-circle" viewBox="0 0 16 16">
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+              </svg>
+            <h2 class="pt-3"><%= usuario.username %></h2>
+            <h6>Te uniste el <%= usuario.dia %> de <%= usuario.mes %> del <%= usuario.anio %> · <%= usuario.rol %></h6>
+        </div>
+        <div class="container my-3">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="mt-4">
+                        <label for="user">E-mail:</label>
+                        <input disabled value="<%= usuario.email %>" type="mail" class="form-control" maxlength="30"
+                            placeholder="Introduce aquí tu usuario..." id="user">
+                    </div>
+                    <div class="mt-4">
+                        <label for="pwd">Contraseña:</label>
+                        <div class="input-group">
+                            <input disabled value="<%= usuario.password %>" type="password" class="form-control"
+                                maxlength="50" placeholder="Introduce aquí tu contraseña..." id="pass"><span
+                                class="mostrar-pass input-group-text" onclick="togglePasswordVisibility()"
+                                title="Mostrar contraseña"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                                    height="16" fill="greenyellow" class="bi bi-eye" viewBox="0 0 16 16">
+                                    <path
+                                        d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                                    <path
+                                        d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                                </svg></span>
+                        </div>
+                    </div>
+                    <div class="mt-4" id="buttons">
+                        <button class="btn btn-sm btn-primary" id="changePass" onclick="toggleChangePassword()">Cambiar
+                            contraseña</button>
+                        <button disabled style="display: none" class="btn btn-sm btn-success" id="confirm"
+                            onclick="confirmChanges()">Confirmar</button>
+                        <button class="btn btn-sm btn-danger" style="display: none" id="cancel"
+                            onclick="cancelChangePassword()">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/scripts.js"></script>
+
 </body>
+
+</html>

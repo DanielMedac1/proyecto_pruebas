@@ -137,11 +137,14 @@ app.post('/iniciar', async (req, res) => {
                                     return;
                                 }
                                 const esAdmin = parseInt(results[0].admin);
+                                var rol = "";
                                 if (esAdmin === 1) {
                                     req.session.admin = true;
+                                    rol = "Administrador";
                                     console.log("Entró un administrador")
                                 } else {
                                     req.session.user = true;
+                                    rol = "Usuario";
                                     console.log("Entró un usuario")
                                 }
 
@@ -197,7 +200,8 @@ app.post('/iniciar', async (req, res) => {
                                 password: results[0].password,
                                 dia: dia,
                                 mes: nombreMes,
-                                anio: anio
+                                anio: anio,
+                                rol: rol
                             }
                             req.session.info = usuario;
                             if (req.body.remember) {
@@ -343,6 +347,26 @@ app.get('/confirm', (req, res) => {
                         }
                     });
                 }
+            }
+        });
+    })
+});
+
+app.post('/change-password', async (req, res) => {
+    const password = req.body.password;
+
+    if (password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
+        sendResponse(res, "change invalid");
+        return;
+    }
+    pool.getConnection(function (err, connection) {
+        connection.query('UPDATE usuarios SET password = ? WHERE username = ?', [password, req.session.info.username], (err, updateResult) => {
+            connection.release();
+            if (err) {
+                console.error(err);
+                sendResponse(res, "change error");
+            } else {
+                sendResponse(res, "change success");
             }
         });
     })
