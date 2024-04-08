@@ -355,7 +355,7 @@ app.get('/confirm', (req, res) => {
 app.post('/change-password', async (req, res) => {
     const password = req.body.password;
 
-    if (password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
+    if (password == "" || password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
         sendResponse(res, "change invalid");
         return;
     }

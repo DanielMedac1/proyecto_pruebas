@@ -43,16 +43,16 @@
         <div class="container my-3">
             <div class="row justify-content-center">
                 <div class="col-lg-6">
-                    <div class="mt-4">
-                        <label for="user">E-mail:</label>
+                    <div>
+                        <label for="email">E-mail:</label>
                         <input disabled value="<%= usuario.email %>" type="mail" class="form-control" maxlength="30"
-                            placeholder="Introduce aquí tu usuario..." id="user">
+                            id="user">
                     </div>
                     <div class="mt-4">
                         <label for="pwd">Contraseña:</label>
                         <div class="input-group">
                             <input disabled value="<%= usuario.password %>" type="password" class="form-control"
-                                maxlength="50" placeholder="Introduce aquí tu contraseña..." id="pass"><span
+                                maxlength="50" placeholder="Introduce aquí tu nueva contraseña..." id="pass"><span
                                 class="mostrar-pass input-group-text" onclick="togglePasswordVisibility()"
                                 title="Mostrar contraseña"><svg xmlns="http://www.w3.org/2000/svg" width="16"
                                     height="16" fill="greenyellow" class="bi bi-eye" viewBox="0 0 16 16">
@@ -63,7 +63,20 @@
                                 </svg></span>
                         </div>
                     </div>
-                    <div class="mt-4" id="buttons">
+                    <div class="pt-2" id="requisitos" style="display: none">
+                        <a href="" data-bs-toggle="collapse" data-bs-target="#normas">Propiedades de contraseña</a>
+                        <div id="normas" class="collapse">
+                            <ul>
+                                <li id="pass-length" class="text-danger">Al menos 8 caracteres de longitud</li>
+                                <li id="pass-upper" class="text-danger">Al menos una letra mayúscula (A-Z)</li>
+                                <li id="pass-lower" class="text-danger">Al menos una letra minúscula (a-z)</li>
+                                <li id="pass-digit" class="text-danger">Al menos un dígito (0-9)</li>
+                                <li id="pass-special" class="text-danger">Al menos un carácter especial (por ejemplo, !
+                                    @ # $ % ^ & *)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="my-4" id="buttons">
                         <button class="btn btn-sm btn-primary" id="changePass" onclick="toggleChangePassword()">Cambiar
                             contraseña</button>
                         <button disabled style="display: none" class="btn btn-sm btn-success" id="confirm"
