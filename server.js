@@ -1,10 +1,9 @@
 //Importación de las librerías
-const express = require('express')
-const fs = require('fs')
+const express = require('express');
+const fs = require('fs');
 var session = require('express-session');
-const cookieParser = require('cookie-parser')
-const crypto = require('crypto');
-const MongoDBStore = require('connect-mongodb-session')(session);
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 const confirmationMail = require('./email-controller.js');
 
 //Creación de la aplicación
@@ -17,11 +16,6 @@ app.use('/styles', express.static(__dirname + '/public/css'));
 //Para los ficheros EJS
 app.set('views', 'views')
 app.set('view engine', 'ejs')
-
-const storeSession = new MongoDBStore({
-    uri: 'mongodb+srv://infocyberniks:jesucristoNuestroSeñor1999@cluster0.pvhjqm8.mongodb.net/CyberNiks?retryWrites=true&w=majority&appName=Cluster0',
-    collection: 'sessions'
-});
 
 app.use(express.json());
 app.use(cookieParser())
@@ -37,6 +31,11 @@ app.use(session({
     }
 }));
 
+//Conexión a la base de datos
+const pool = require('./db/db_sql.js')
+const uri = require('./db/db_mongo.js')
+
+//Middleware de autenticación
 var auth = function (req, res, next) {
     if (req.session && (req.session.admin || req.session.user)) {
         return next();
@@ -46,11 +45,30 @@ var auth = function (req, res, next) {
     }
 }
 
-//Conexión a la base de datos
-const pool = require('./db/db_sql.js')
-const uri = require('./db/db_mongo.js')
+// Función para encriptar una contraseña con bcrypt
+async function encrypt(value) {
+    const saltRounds = 10; // Número de rondas de hashing
+    const hashedValue = await bcrypt.hash(value, saltRounds);
+    return hashedValue;
+}
 
-//Rutas
+//Función para enviar respuestas JSON más facilmente
+function sendResponse(res, message) {
+    res.send({ "res": message });
+}
+
+//Función para generar tokens
+function generateToken(length = 32) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let token = '';
+    for (let i = 0; i < length; i++) {
+        token += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return token;
+}
+
+
+//Rutas de páginas
 app.get('/', (req, res) => {
     var contenido = fs.readFileSync('public/index.html', 'utf8')
     res.setHeader('Content-Type', 'text/html')
@@ -82,41 +100,17 @@ app.get('/home', auth, (req, res) => {
         res.redirect('/login');
     }
 })
+
+//Ruta para que se cierre la sesión del usuario
 app.post('/destroy-session', (req, res) => {
     req.session.destroy();
     res.clearCookie('connect.sid', { path: '/' });
 })
 
-//Consultas BBDD
-/* app.get('/consulta', (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) throw err
-        console.log('Conectado a la base de datos MySQL')
-        connection.query('SELECT * FROM prueba', (err, rows) => {
-            console.log('- Consulta realizada -')
-            connection.release() // Devolver la conexión a la pool
-            console.log('Desconexión de la base de datos MySQL')
+//Consultas BBDD para la gestión de cuentas de usuario
 
-            if (!err) {
-                if (rows.length > 0) {
-                    const campo3Value = rows[0].campo3.toString();
-                    res.send(campo3Value);
-                } else {
-                    res.send('No se encontraron resultados');
-                }
-                res.end();
-            } else {
-                console.log(err)
-            }
-        })
-    })
-}) */
-
-function sendResponse(res, message) {
-    res.send({ "res": message });
-}
-
-app.post('/iniciar', async (req, res) => {
+//Para el inicio de sesión del usuario
+/* app.post('/iniciar', async (req, res) => {
     if (!req.body.username || !req.body.password) {
         sendResponse(res, "login failed");
     } else {
@@ -125,7 +119,7 @@ app.post('/iniciar', async (req, res) => {
                 console.error('Error al obtener la conexión de la pool: ', err);
                 sendResponse(res, "login error");
             } else {
-                connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.body.username, req.body.password], function (error, results, fields) {
+                connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.body.username, req.body.password], async function (error, results, fields) {
                     connection.release(); // Liberar la conexión después de usarla
 
                     if (error) {
@@ -137,8 +131,19 @@ app.post('/iniciar', async (req, res) => {
                                     sendResponse(res, "login unconfirmed");
                                     return;
                                 }
+
+                                const hashedPassword = results[0].password;
+                                const passwordMatch = await bcrypt.compare(password, hashedPassword);
+
+                                if (!passwordMatch) {
+                                    console.log("Entra por acá")
+                                    sendResponse(res, "login invalid");
+                                    return;
+                                }
+
                                 const esAdmin = parseInt(results[0].admin);
                                 var rol = "";
+
                                 if (esAdmin === 1) {
                                     req.session.admin = true;
                                     rol = "Administrador";
@@ -219,6 +224,7 @@ app.post('/iniciar', async (req, res) => {
                             sendResponse(res, "login true");
 
                         } else {
+                            console.log("Segundo entra")
                             sendResponse(res, "login invalid");
                         }
                     }
@@ -226,19 +232,137 @@ app.post('/iniciar', async (req, res) => {
             }
         });
     }
+}); */
+
+app.post('/iniciar', async (req, res) => {
+    if (!req.body.username || !req.body.password) {
+        sendResponse(res, "login failed");
+    } else {
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.error('Error al obtener la conexión de la pool: ', err);
+                sendResponse(res, "login error");
+            } else {
+                connection.query('SELECT * FROM usuarios WHERE username = ?', [req.body.username], async function (error, results, fields) {
+                    connection.release(); // Liberar la conexión después de usarla
+
+                    if (error) {
+                        console.error('Error al ejecutar la consulta: ', error);
+                        sendResponse(res, "login error");
+                    } else {
+                        if (results.length === 0) {
+                            sendResponse(res, "login invalid");
+                            return;
+                        }
+
+                        const user = results[0];
+                        const hashedPassword = results[0].password;
+
+                        const passwordMatch = await bcrypt.compare(req.body.password, hashedPassword);
+
+                        if (!passwordMatch) {
+                            console.log("Contraseña incorrecta");
+                            sendResponse(res, "login invalid");
+                            return;
+                        }
+
+                        if (user.is_confirmed === 0 || user.confirm_token !== null) {
+                            console.log("Usuario no confirmado");
+                            sendResponse(res, "login unconfirmed");
+                            return;
+                        }
+
+                        const esAdmin = parseInt(user.admin);
+                        var rol = "";
+
+                        if (esAdmin === 1) {
+                            req.session.admin = true;
+                            rol = "Administrador";
+                            console.log("Entró un administrador")
+                        } else {
+                            req.session.user = true;
+                            rol = "Usuario";
+                            console.log("Entró un usuario")
+                        }
+
+                        const fecha = user.fecha;
+                        var dia = fecha.getDate();
+                        var numMes = fecha.getMonth() + 1;
+                        var nombreMes;
+                        var anio = fecha.getFullYear();
+
+                        switch (numMes) {
+                            case 1:
+                                nombreMes = 'Enero';
+                                break;
+                            case 2:
+                                nombreMes = 'Febrero';
+                                break;
+                            case 3:
+                                nombreMes = 'Marzo';
+                                break;
+                            case 4:
+                                nombreMes = 'Abril';
+                                break;
+                            case 5:
+                                nombreMes = 'Mayo';
+                                break;
+                            case 6:
+                                nombreMes = 'Junio';
+                                break;
+                            case 7:
+                                nombreMes = 'Julio';
+                                break;
+                            case 8:
+                                nombreMes = 'Agosto';
+                                break;
+                            case 9:
+                                nombreMes = 'Septiembre';
+                                break;
+                            case 10:
+                                nombreMes = 'Octubre';
+                                break;
+                            case 11:
+                                nombreMes = 'Noviembre';
+                                break;
+                            case 12:
+                                nombreMes = 'Diciembre';
+                                break;
+                        }
+
+                        const usuario = {
+                            username: user.username,
+                            email: user.email,
+                            password: req.body.password,
+                            dia: dia,
+                            mes: nombreMes,
+                            anio: anio,
+                            rol: rol
+                        }
+                        req.session.info = usuario;
+                        if (req.body.remember) {
+                            console.log("Recordar usuario")
+                            req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 7; // Duración de la sesión si se recuerda al usuario
+                            req.session.save(function (err) {
+                                if (err) {
+                                    console.error('Error al guardar la sesión: ', err);
+                                } else {
+                                    console.log('Sesión guardada');
+                                }
+                            });
+                        }
+                        sendResponse(res, "login true");
+                    }
+                });
+            }
+        });
+    }
 });
 
-function generateToken(length = 32) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let token = '';
-    for (let i = 0; i < length; i++) {
-        token += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return token;
-}
-
+//Para el registro de los usuarios
 app.post('/registrar', async (req, res) => {
     const { username, password, email } = req.body;
+    const hashedPassword = await encrypt(password);
 
     if (!username || !password || !email) {
         sendResponse(res, "register failed");
@@ -267,7 +391,7 @@ app.post('/registrar', async (req, res) => {
             return;
         } else {
             const confirmToken = generateToken();
-            connection.query('INSERT INTO usuarios(username, email, password, admin, fecha, confirm_token) VALUES (?,?,?, false, CURDATE(), ?)', [username, email, password, confirmToken], function (error, results, fields) {
+            connection.query('INSERT INTO usuarios(username, email, password, admin, fecha, confirm_token) VALUES (?,?,?, false, CURDATE(), ?)', [username, email, hashedPassword, confirmToken], function (error, results, fields) {
                 connection.release(); // Liberar la conexión después de usarla
 
                 if (error) {
@@ -279,11 +403,7 @@ app.post('/registrar', async (req, res) => {
                     }
                 } else {
                     if (results.affectedRows > 0) {
-                        const usuario = {
-                            username: username,
-                            email: email,
-                        }
-                        confirmationMail(email, confirmToken);
+                        confirmationMail(email, username, confirmToken);
                         sendResponse(res, "register true");
                     } else {
                         sendResponse(res, "register invalid");
@@ -294,6 +414,7 @@ app.post('/registrar', async (req, res) => {
     });
 });
 
+//Ruta para que el usuario confirme su dirección de email
 app.get('/confirm', (req, res) => {
     const { token } = req.query;
     pool.getConnection((err, connection) => {
@@ -326,6 +447,7 @@ app.get('/confirm', (req, res) => {
     })
 });
 
+//Para que el usuario pueda cambiar la contraseña
 app.post('/change-password', async (req, res) => {
     const password = req.body.password;
 
@@ -333,8 +455,11 @@ app.post('/change-password', async (req, res) => {
         sendResponse(res, "change invalid");
         return;
     }
+
+    const hashedPassword = await encrypt(password);
+
     pool.getConnection(function (err, connection) {
-        connection.query('UPDATE usuarios SET password = ? WHERE username = ?', [password, req.session.info.username], (err, updateResult) => {
+        connection.query('UPDATE usuarios SET password = ? WHERE username = ?', [hashedPassword, req.session.info.username], (err, updateResult) => {
             connection.release();
             if (err) {
                 console.error(err);
@@ -347,15 +472,12 @@ app.post('/change-password', async (req, res) => {
 });
 
 
-
-//En el caso de que vayamos a una ruta que no existe, irá a la raiz por defecto
+//En el caso de que vayamos a una ruta que no existe, se lanzará un error 404
 app.use((req, res, next) => {
     var contenido = fs.readFileSync('public/notFound.html', 'utf8')
     res.setHeader('Content-Type', 'text/html')
     res.status(404).send(contenido);
 });
-
-
 
 
 //Servidor
