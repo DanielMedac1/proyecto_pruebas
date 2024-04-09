@@ -389,7 +389,7 @@ app.post('/registrar', async (req, res) => {
         return;
     }
 
-    if (password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
+    if (password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_,.-])[A-Za-z\d!@#$%^&*_,.-]{8,}$/.test(password)) {
         sendResponse(res, "invalid password");
         return;
     }
@@ -436,7 +436,7 @@ app.get('/confirm', (req, res) => {
                 res.status(500).send('Error al confirmar el usuario.');
             } else {
                 if (result.length === 0) {
-                    var contenido = fs.readFileSync('public/notFound.html', 'utf8')
+                    var contenido = fs.readFileSync('public/passwordAlreadyConfirmed.html', 'utf8')
                     res.setHeader('Content-Type', 'text/html')
                     res.status(404).send(contenido);
                 } else {
