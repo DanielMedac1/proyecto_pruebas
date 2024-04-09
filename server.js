@@ -5,6 +5,7 @@ var session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const confirmationMail = require('./email-controller.js');
+const rateLimiter = require('express-rate-limit');
 
 //Creación de la aplicación
 const app = express()
@@ -44,6 +45,15 @@ var auth = function (req, res, next) {
         res.redirect('/login');
     }
 }
+
+//Middleware de limite de peticiones
+const limiter = rateLimiter({
+    windowsMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Demasiadas peticiones, espera 15 minutos'
+})
+
+app.use(limiter)
 
 // Función para encriptar una contraseña con bcrypt
 async function encrypt(value) {
@@ -379,7 +389,7 @@ app.post('/registrar', async (req, res) => {
         return;
     }
 
-    if (password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
+    if (password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_,.-])[A-Za-z\d!@#$%^&*_,.-]{8,}$/.test(password)) {
         sendResponse(res, "invalid password");
         return;
     }
@@ -426,7 +436,7 @@ app.get('/confirm', (req, res) => {
                 res.status(500).send('Error al confirmar el usuario.');
             } else {
                 if (result.length === 0) {
-                    var contenido = fs.readFileSync('public/notFound.html', 'utf8')
+                    var contenido = fs.readFileSync('public/passwordAlreadyConfirmed.html', 'utf8')
                     res.setHeader('Content-Type', 'text/html')
                     res.status(404).send(contenido);
                 } else {
