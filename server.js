@@ -5,6 +5,7 @@ var session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const confirmationMail = require('./email-controller.js');
+const rateLimiter = require('express-rate-limit');
 
 //Creación de la aplicación
 const app = express()
@@ -44,6 +45,15 @@ var auth = function (req, res, next) {
         res.redirect('/login');
     }
 }
+
+//Middleware de limite de peticiones
+const limiter = rateLimiter({
+    windowsMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Demasiadas peticiones, espera 15 minutos'
+})
+
+app.use(limiter)
 
 // Función para encriptar una contraseña con bcrypt
 async function encrypt(value) {
