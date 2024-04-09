@@ -5,6 +5,7 @@ var session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const confirmationMail = require('./email-controller.js');
+const rateLimit = require("express-rate-limit");
 
 //Creación de la aplicación
 const app = express()
@@ -44,6 +45,17 @@ var auth = function (req, res, next) {
         res.redirect('/login');
     }
 }
+
+//Middleware para limitar las peticiones
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Máximo de peticiones
+    keryGenerator: function (req) {
+        return req.user.id
+    }
+});
+
+app.use(limiter);
 
 // Función para encriptar una contraseña con bcrypt
 async function encrypt(value) {
