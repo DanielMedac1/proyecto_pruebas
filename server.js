@@ -464,7 +464,7 @@ app.get('/confirm', (req, res) => {
     })
 });
 
-//Ruta para confirmar el usuario
+//Ruta para comprobar el usuario para restablecer la contraseña
 app.get('/reset', (req, res) => {
     const { token } = req.query;
     pool.getConnection((err, connection) => {
@@ -490,7 +490,7 @@ app.get('/reset', (req, res) => {
     })
 });
 
-//Ruta para que el usuario confirme su dirección de email
+//Ruta para que se envíe por e-mail el enlace para restablecer la contraseña
 app.post('/forgot-password', (req, res) => {
     const email = req.body.email;
 
