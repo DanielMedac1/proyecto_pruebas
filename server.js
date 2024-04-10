@@ -34,7 +34,8 @@ app.use(session({
 
 //Conexión a la base de datos
 const pool = require('./db/db_sql.js')
-const uri = require('./db/db_mongo.js')
+const uri = require('./db/db_mongo.js');
+const { stringify } = require('querystring');
 
 //Middleware de autenticación
 var auth = function (req, res, next) {
@@ -94,7 +95,7 @@ app.get('/register', (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
-app.get('/reset-password', (req, res) => {
+app.get('/forgot-password', (req, res) => {
     var contenido = fs.readFileSync('public/resetPass1.html', 'utf8')
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
@@ -490,7 +491,7 @@ app.get('/reset', (req, res) => {
 });
 
 //Ruta para que el usuario confirme su dirección de email
-app.post('/reset-password', (req, res) => {
+app.post('/forgot-password', (req, res) => {
     const email = req.body.email;
 
     pool.getConnection((err, connection) => {
@@ -527,9 +528,70 @@ app.post('/reset-password', (req, res) => {
     })
 });
 
-//Para que el usuario pueda cambiar la contraseña
+//Para que el usuario pueda cambiar la contraseña (si se le ha olvidado)
+app.post('/reset-password', async (req, res) => {
+    const password = req.body.password;
+    const token = req.body.token;
+
+    if (!password) {
+        console.log("No hay password")
+        sendResponse(res, "change invalid");
+        return;
+    }
+
+    if (password == "" || password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
+        console.log("La contraseña no cumple")
+        sendResponse(res, "change invalid");
+        return;
+    }
+
+    const hashedPassword = await encrypt(password);
+
+    /* pool.getConnection(function (err, connection) {
+        connection.query('UPDATE usuarios SET password = ? WHERE username = ?', [hashedPassword, req.session.info.username], (err, updateResult) => {
+            connection.release();
+            if (err) {
+                console.error(err);
+                sendResponse(res, "change error");
+            } else {
+                sendResponse(res, "change success");
+            }
+        });
+    }) */
+
+    pool.getConnection(function (err, connection) {
+        connection.query('SELECT * FROM usuarios WHERE reset_token = ?', [token], (err, result) => {
+            connection.release();
+            console.log("Devuelve: " + stringify(result))
+            if (err) {
+                console.error(err);
+                sendResponse(res, "change error");
+            } else {
+                if (result.length === 0) {
+                    sendResponse(res, "change error");
+                } else {
+                    connection.query('UPDATE usuarios SET password = ?, reset_token = NULL WHERE reset_token = ?', [hashedPassword, token], (err, updateResult) => {
+                        if (err) {
+                            console.error(err);
+                            sendResponse(res, "change error");
+                        } else {
+                            sendResponse(res, "change success");
+                        }
+                    })
+                }
+            }
+        })
+    })
+});
+
+//Para que el usuario pueda cambiar la contraseña (en la interfaz de CyberNiks)
 app.post('/change-password', async (req, res) => {
     const password = req.body.password;
+
+    if (!password) {
+        sendResponse(res, "change invalid");
+        return;
+    }
 
     if (password == "" || password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
         sendResponse(res, "change invalid");

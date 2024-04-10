@@ -161,7 +161,7 @@ function resetPass() {
     //HAGO LA PETICION AL SERVIDOR Y GUARDO LA RESPUESTA EN LA VARIABLE PROMISE
     var promise = $.ajax({
         type: 'POST',
-        url: '/reset-password',
+        url: '/forgot-password',
 
         //Lo que envío (en forma de JSON)
         data: JSON.stringify({ email: emailReset }),
