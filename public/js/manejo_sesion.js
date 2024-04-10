@@ -153,6 +153,56 @@ function iniciarSesion() {
 }
 
 /**
+ * Función para resetear la contraseña
+ */
+function resetPass() {
+    var emailReset = document.getElementById('emailReset').value;
+
+    //HAGO LA PETICION AL SERVIDOR Y GUARDO LA RESPUESTA EN LA VARIABLE PROMISE
+    var promise = $.ajax({
+        type: 'POST',
+        url: '/reset-password',
+
+        //Lo que envío (en forma de JSON)
+        data: JSON.stringify({ email: emailReset }),
+        contentType: 'application/json;charset=UTF-8',
+        dataType: 'json'
+    });
+
+    var mensaje = document.getElementById('mensaje');
+    mensaje.textContent = "";
+
+    promise.always(function (data) {
+        mostrarSpinner();
+        if (data.res == "email true") { //Si el login es exitoso
+            ocultarSpinner();
+            window.location.replace("/login?res=true");
+        } else if (data.res == "email invalid") { //Si no es exitoso
+            ocultarSpinner();
+            mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <b>Error:</b> el usuario no existe o la contraseña es incorrecta.
+            </div>`
+        } else if (data.res == "email error") { //Ha faltado un parametro
+            ocultarSpinner();
+            mensaje.innerHTML = `<div class="mt-2 border-danger text-center alert alert-danger p-2" id="mensaje">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <b>Error:</b> se ha producido un error. Por favor, pruebe de nuevo.
+            </div>`
+        } else { //Por si los datos son corruptos u otra cosa en vez de hacer que el cliente espere
+            ocultarSpinner();
+            console.log("Email: " + emailReset);
+            window.alert("Error");
+        }
+    });
+
+}
+
+/**
  * Función para hacer submit en el formulario con la tecla 'enter'
  */
 function handleEnterKeyPress(event) {
@@ -190,6 +240,7 @@ var usuario = document.getElementById('user');
 var contrasena = document.getElementById('pass');
 var email = document.getElementById('email');
 var button = document.getElementById('submit');
+var emailReset = document.getElementById('emailReset');
 
 // Función para validar ambos campos
 function validarCamposLogin() {
@@ -295,10 +346,21 @@ function validarCamposRegister() {
     }
 }
 
-if (email) {
+function validarCampoReset() {
+    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailReset.value.trim() !== "" && emailPattern.test(emailReset.value.trim())) {
+        button.disabled = false;
+    } else {
+        button.disabled = true;
+    }
+}
+
+if (email && usuario && contrasena) {
     usuario.addEventListener("input", validarCamposRegister);
     email.addEventListener("input", validarCamposRegister);
     contrasena.addEventListener("input", validarCamposRegister);
+} else if (emailReset) {
+    emailReset.addEventListener("input", validarCampoReset);
 } else {
     usuario.addEventListener("input", validarCamposLogin);
     contrasena.addEventListener("input", validarCamposLogin);
@@ -320,6 +382,7 @@ var urlString = window.location.href;
 var url = new URL(urlString);
 
 var reg = url.searchParams.get('reg');
+var res = url.searchParams.get('res');
 if (reg == "true") {
     var mensaje = document.getElementById('mensaje');
     mensaje.textContent = "";
@@ -328,5 +391,16 @@ if (reg == "true") {
                                 <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
                             </svg>
                             <b>Éxito:</b> se ha enviado un e-mail a tu dirección de correo electrónico para confirmar tu usuario.
+                        </div>`
+}
+
+if (res == "true") {
+    var mensaje = document.getElementById('mensaje');
+    mensaje.textContent = "";
+    mensaje.innerHTML = `<div class="mt-2 border-success text-center alert alert-success p-2" id="mensaje">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                            </svg>
+                            <b>Éxito:</b> se ha enviado un e-mail a tu dirección de correo electrónico para restablecer tu contraseña.
                         </div>`
 }

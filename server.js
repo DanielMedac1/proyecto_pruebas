@@ -4,7 +4,7 @@ const fs = require('fs');
 var session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
-const confirmationMail = require('./email-controller.js');
+const { confirmationMail, resetMail } = require('./email-controller.js');
 const rateLimiter = require('express-rate-limit');
 
 //Creación de la aplicación
@@ -94,6 +94,12 @@ app.get('/register', (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.send(contenido)
 })
+app.get('/reset-password', (req, res) => {
+    var contenido = fs.readFileSync('public/resetPass1.html', 'utf8')
+    res.setHeader('Content-Type', 'text/html')
+    res.send(contenido)
+})
+
 app.get('/profile', auth, (req, res) => {
     if (req.session.admin || req.session.user) {
         res.render('profile-info', { usuario: req.session.info });
@@ -424,7 +430,7 @@ app.post('/registrar', async (req, res) => {
     });
 });
 
-//Ruta para que el usuario confirme su dirección de email
+//Ruta para confirmar el usuario
 app.get('/confirm', (req, res) => {
     const { token } = req.query;
     pool.getConnection((err, connection) => {
@@ -454,6 +460,70 @@ app.get('/confirm', (req, res) => {
                 }
             }
         });
+    })
+});
+
+//Ruta para confirmar el usuario
+app.get('/reset', (req, res) => {
+    const { token } = req.query;
+    pool.getConnection((err, connection) => {
+        // Buscar el usuario con el token de confirmación en la base de datos
+        connection.query('SELECT * FROM usuarios WHERE reset_token = ?', [token], (err, result) => {
+            connection.release();
+            if (err) {
+                console.error(err);
+                res.status(500).send('Error al confirmar el usuario.');
+            } else {
+                if (result.length === 0) {
+                    var contenido = fs.readFileSync('public/notFound.html', 'utf8')
+                    res.setHeader('Content-Type', 'text/html')
+                    res.status(404).send(contenido);
+                } else {
+                    // Actualizar el estado de confirmación del usuario
+                    var contenido = fs.readFileSync('public/resetPass2.html', 'utf8')
+                    res.setHeader('Content-Type', 'text/html')
+                    res.send(contenido);
+                }
+            }
+        });
+    })
+});
+
+//Ruta para que el usuario confirme su dirección de email
+app.post('/reset-password', (req, res) => {
+    const email = req.body.email;
+
+    pool.getConnection((err, connection) => {
+        connection.query('SELECT * FROM usuarios WHERE email = ?', [email], (err, result) => {
+            connection.release();
+            if (err) {
+                console.error(err);
+                sendResponse(res, "email error");
+            } else {
+                if (result.length === 0) {
+                    console.log("No existe el usuario")
+                    sendResponse(res, "email invalid");
+                } else {
+                    const resetToken = generateToken();
+                    const usuario = result[0].username;
+
+                    connection.query('UPDATE usuarios SET reset_token = ? WHERE email = ?', [resetToken, email], (err, results) => {
+                        if (err) {
+                            console.error(err);
+                            res.status(500).send('Error al confirmar el usuario.');
+                        } else {
+                            if (results.affectedRows > 0) {
+                                console.log("Usuario: " + usuario)
+                                resetMail(email, usuario, resetToken);
+                                sendResponse(res, "email true");
+                            } else {
+                                sendResponse(res, "email error");
+                            }
+                        }
+                    })
+                }
+            }
+        })
     })
 });
 
