@@ -23,7 +23,7 @@ function animar(selector, animacion) {
 function cerrarSesion() {
     var promise = $.ajax({
         type: 'POST',
-        url: '/destroy-session',
+        url: '/logout',
     });
 
     promise.always(function (data) {
@@ -118,6 +118,8 @@ function confirmChanges() {
                         text: "La contraseña no cumple con los requisitos.",
                         icon: "error"
                     });
+                } else {
+                    console.log("Error");
                 }
             })
         }

@@ -143,138 +143,14 @@ app.get('/userlist', (req, res) => {
 })
 
 //Ruta para que se cierre la sesión del usuario
-app.post('/destroy-session', (req, res) => {
+app.post('/logout', (req, res) => {
     req.session.destroy();
     res.clearCookie('connect.sid', { path: '/' });
 })
 
 //Consultas BBDD para la gestión de cuentas de usuario
 
-//Para el inicio de sesión del usuario
-/* app.post('/iniciar', async (req, res) => {
-    if (!req.body.username || !req.body.password) {
-        sendResponse(res, "login failed");
-    } else {
-        pool.getConnection(function (err, connection) {
-            if (err) {
-                console.error('Error al obtener la conexión de la pool: ', err);
-                sendResponse(res, "login error");
-            } else {
-                connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [req.body.username, req.body.password], async function (error, results, fields) {
-                    connection.release(); // Liberar la conexión después de usarla
-
-                    if (error) {
-                        console.error('Error al ejecutar la consulta: ', error);
-                    } else {
-                        if (results.length > 0) {
-                            if (results.length > 0) {
-                                if (results[0].is_confirmed === 0 || results[0].confirm_token !== null) {
-                                    sendResponse(res, "login unconfirmed");
-                                    return;
-                                }
-
-                                const hashedPassword = results[0].password;
-                                const passwordMatch = await bcrypt.compare(password, hashedPassword);
-
-                                if (!passwordMatch) {
-                                    console.log("Entra por acá")
-                                    sendResponse(res, "login invalid");
-                                    return;
-                                }
-
-                                const esAdmin = parseInt(results[0].admin);
-                                var rol = "";
-
-                                if (esAdmin === 1) {
-                                    req.session.admin = true;
-                                    rol = "Administrador";
-                                    console.log("Entró un administrador")
-                                } else {
-                                    req.session.user = true;
-                                    rol = "Usuario";
-                                    console.log("Entró un usuario")
-                                }
-
-                                const fecha = results[0].fecha;
-                                var dia = fecha.getDate();
-                                var numMes = fecha.getMonth() + 1;
-                                var nombreMes;
-                                var anio = fecha.getFullYear();
-
-                                switch (numMes) {
-                                    case 1:
-                                        nombreMes = 'Enero';
-                                        break;
-                                    case 2:
-                                        nombreMes = 'Febrero';
-                                        break;
-                                    case 3:
-                                        nombreMes = 'Marzo';
-                                        break;
-                                    case 4:
-                                        nombreMes = 'Abril';
-                                        break;
-                                    case 5:
-                                        nombreMes = 'Mayo';
-                                        break;
-                                    case 6:
-                                        nombreMes = 'Junio';
-                                        break;
-                                    case 7:
-                                        nombreMes = 'Julio';
-                                        break;
-                                    case 8:
-                                        nombreMes = 'Agosto';
-                                        break;
-                                    case 9:
-                                        nombreMes = 'Septiembre';
-                                        break;
-                                    case 10:
-                                        nombreMes = 'Octubre';
-                                        break;
-                                    case 11:
-                                        nombreMes = 'Noviembre';
-                                        break;
-                                    case 12:
-                                        nombreMes = 'Diciembre';
-                                        break;
-                                }
-
-                            }
-                            const usuario = {
-                                username: results[0].username,
-                                email: results[0].email,
-                                password: results[0].password,
-                                dia: dia,
-                                mes: nombreMes,
-                                anio: anio,
-                                rol: rol
-                            }
-                            req.session.info = usuario;
-                            if (req.body.remember) {
-                                console.log("Recordar usuario")
-                                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 7; // Duración de la sesión si se recuerda al usuario
-                                req.session.save(function (err) {
-                                    if (err) {
-                                        console.error('Error al guardar la sesión: ', err);
-                                    } else {
-                                        console.log('Sesión guardada');
-                                    }
-                                });
-                            }
-                            sendResponse(res, "login true");
-
-                        } else {
-                            console.log("Segundo entra")
-                            sendResponse(res, "login invalid");
-                        }
-                    }
-                });
-            }
-        });
-    }
-}); */
-
+// Para el inicio de sesión del usuario
 app.post('/iniciar', async (req, res) => {
     if (!req.body.username || !req.body.password) {
         sendResponse(res, "login failed");
@@ -610,31 +486,58 @@ app.post('/reset-password', async (req, res) => {
 
 //Para que el usuario pueda cambiar la contraseña (en la interfaz de CyberNiks)
 app.post('/change-password', async (req, res) => {
-    const password = req.body.password;
-
-    if (!password) {
+    if (!req.session.info && (!req.session.admin || !req.session.user)) {
+        console.log("No hay sesión")
         sendResponse(res, "change invalid");
-        return;
+    } else {
+        const password = req.body.password;
+
+        if (!password) {
+            sendResponse(res, "change invalid");
+            return;
+        }
+
+        if (password == "" || password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
+            sendResponse(res, "change invalid");
+            return;
+        }
+
+        const hashedPassword = await encrypt(password);
+
+        pool.getConnection(function (err, connection) {
+            connection.query('UPDATE usuarios SET password = ? WHERE username = ?', [hashedPassword, req.session.info.username], (err, updateResult) => {
+                connection.release();
+                if (err) {
+                    console.error(err);
+                    sendResponse(res, "change error");
+                } else {
+                    sendResponse(res, "change success");
+                }
+            });
+        })
     }
+});
 
-    if (password == "" || password.length > 50 || !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/.test(password)) {
-        sendResponse(res, "change invalid");
-        return;
+app.delete('/eliminar-usuario/:user', (req, res) => {
+    if (!req.session.info || !req.session.admin) {
+        sendResponse(res, "delete error");
+    } else {
+        pool.getConnection((err, connection) => {
+            if (err) throw err
+            connection.query('DELETE FROM usuarios WHERE username = ?', [req.params.user], (err, result) => {
+                connection.release()
+                if (!err) {
+                    if (result.affectedRows > 0) {
+                        sendResponse(res, "delete success");
+                    } else {
+                        sendResponse(res, "user invalid");
+                    }
+                } else {
+                    sendResponse(res, "delete error");
+                }
+            })
+        })
     }
-
-    const hashedPassword = await encrypt(password);
-
-    pool.getConnection(function (err, connection) {
-        connection.query('UPDATE usuarios SET password = ? WHERE username = ?', [hashedPassword, req.session.info.username], (err, updateResult) => {
-            connection.release();
-            if (err) {
-                console.error(err);
-                sendResponse(res, "change error");
-            } else {
-                sendResponse(res, "change success");
-            }
-        });
-    })
 });
 
 
