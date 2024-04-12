@@ -118,6 +118,30 @@ app.get('/home', auth, (req, res) => {
     }
 })
 
+app.get('/userlist', (req, res) => {
+    if (req.session.admin) {
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.error('Error al obtener la conexión de la pool: ', err);
+            } else {
+                connection.query('SELECT * FROM usuarios WHERE username != ?', [req.session.info.username], function (error, results, fields) {
+                    connection.release(); // Liberar la conexión después de usarla
+                    if (error) {
+                        console.error('Error al ejecutar la consulta: ', error);
+                    } else {
+                        results.forEach((user) => {
+                            user.admin = user.admin ? 'Administrador' : 'Usuario';
+                        });
+                        res.render('admin/userlist-admin', { users: results });
+                    }
+                });
+            }
+        })
+    } else {
+        res.redirect('/login');
+    }
+})
+
 //Ruta para que se cierre la sesión del usuario
 app.post('/destroy-session', (req, res) => {
     req.session.destroy();
