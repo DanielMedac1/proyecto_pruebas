@@ -540,6 +540,50 @@ app.delete('/eliminar-usuario/:user', (req, res) => {
     }
 });
 
+app.put('/to-admin/:user', (req, res) => {
+    if (!req.session.info || !req.session.admin) {
+        sendResponse(res, "to-admin error");
+    } else {
+        pool.getConnection((err, connection) => {
+            if (err) throw err
+            connection.query('UPDATE usuarios SET admin = TRUE WHERE username = ?', [req.params.user], (err, result) => {
+                connection.release()
+                if (!err) {
+                    if (result.affectedRows > 0) {
+                        sendResponse(res, "to-admin success");
+                    } else {
+                        sendResponse(res, "to-admin invalid");
+                    }
+                } else {
+                    sendResponse(res, "to-admin error");
+                }
+            })
+        })
+    }
+});
+
+app.put('/to-user/:user', (req, res) => {
+    if (!req.session.info || !req.session.admin) {
+        sendResponse(res, "to-user error");
+    } else {
+        pool.getConnection((err, connection) => {
+            if (err) throw err
+            connection.query('UPDATE usuarios SET admin = FALSE WHERE username = ?', [req.params.user], (err, result) => {
+                connection.release()
+                if (!err) {
+                    if (result.affectedRows > 0) {
+                        sendResponse(res, "to-user success");
+                    } else {
+                        sendResponse(res, "to-user invalid");
+                    }
+                } else {
+                    sendResponse(res, "to-user error");
+                }
+            })
+        })
+    }
+});
+
 
 //En el caso de que vayamos a una ruta que no existe, se lanzará un error 404
 app.use((req, res, next) => {

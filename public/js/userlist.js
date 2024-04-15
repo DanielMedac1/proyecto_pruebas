@@ -1,6 +1,7 @@
 $(document).ready(function () {
     $('#user-table').DataTable({
         scrollX: true,
+        responsive: true,
         "language": {
             "decimal":          "",
             "emptyTable":       "No hay datos disponibles",
@@ -38,11 +39,14 @@ $(document).ready(function () {
                 "type": "date",
                 "targets": [2],
                 "render": function (data, type, row) {
-                    // Convertir la cadena de texto en una fecha
-                    var date = new Date(data);
-                    // Formatear la fecha como dd-mm-yyyy
-                    return date.toLocaleDateString('es-ES');
-                }
+                    if (type === 'sort' || type === 'type') {
+                        return new Date(data);
+                    }
+                    else {
+                        var date = new Date(data);
+                        return date.toLocaleDateString('es-ES');
+                    }
+                },
             }
 
         ]
@@ -93,7 +97,7 @@ function deleteUser(username) {
     });
 }
 
-function turnToAdmin(username) {
+function toAdmin(username) {
     Swal.fire({
         title: "¿Estás seguro?",
         text: `¿Desea convertir a ${username} en administrador?`,
@@ -101,13 +105,13 @@ function turnToAdmin(username) {
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Eliminar",
+        confirmButtonText: "Convertir a administrador",
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if(result.isConfirmed) {
             var promise = $.ajax({
                 type: 'PUT',
-                url: '/turn-to-admin/' + username,
+                url: '/to-admin/' + username,
 
                 //Lo que envío (en forma de JSON)
                 data: JSON.stringify({ user: username }),
@@ -124,6 +128,50 @@ function turnToAdmin(username) {
                         window.location.reload();
                     });
                 } else if (data.res == "to-admin invalid" || data.res == "to-admin error") {
+                    Swal.fire({
+                        title: "Error",
+                        text: "Se ha producido un error.",
+                        icon: "error"
+                    });
+                } else {
+                    console.log("Error");
+                }
+            })
+        }
+    });
+}
+
+function toUser(username) {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: `¿Desea convertir a ${username} en usuario?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Convertir a usuario",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if(result.isConfirmed) {
+            var promise = $.ajax({
+                type: 'PUT',
+                url: '/to-user/' + username,
+
+                //Lo que envío (en forma de JSON)
+                data: JSON.stringify({ user: username }),
+                contentType: 'application/json;charset=UTF-8',
+                dataType: 'json'
+            });
+            promise.always(function (data) {
+                if(data.res == "to-user success") {
+                    Swal.fire({
+                        title: "¡Hecho!",
+                        text: "El usuario ha sido convertido en usuario.",
+                        icon: "success"
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else if (data.res == "to-user invalid" || data.res == "to-user error") {
                     Swal.fire({
                         title: "Error",
                         text: "Se ha producido un error.",
