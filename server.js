@@ -278,8 +278,13 @@ app.post('/iniciar', async (req, res) => {
 
 //Para el registro de los usuarios
 app.post('/registrar', async (req, res) => {
-    const { username, password, email } = req.body;
+    const { username, password, email, captcha } = req.body;
     const hashedPassword = await encrypt(password);
+
+    if (captcha === undefined || captcha === "" || captcha === null) {
+        sendResponse(res, "invalid captcha");
+        return;
+    }
 
     if (!username || !password || !email) {
         sendResponse(res, "register failed");

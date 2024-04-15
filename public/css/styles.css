@@ -12672,6 +12672,13 @@ fieldset:disabled .btn {
   }
 }
 
+@media only screen and (max-width: 500px) {
+  .g-recaptcha {
+      transform:scale(0.77);
+      transform-origin:0 0;
+  }
+}
+
 .mostrar-pass {
   cursor: pointer;
 }
