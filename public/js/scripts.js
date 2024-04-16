@@ -71,9 +71,52 @@ function cancelChangePassword() {
 
 }
 
+function deleteUser() {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: "¿Seguro que deseas eliminar tu cuenta?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Eliminar mi perfil",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var promise = $.ajax({
+                type: 'DELETE',
+                url: '/delete-user',
+
+                //Lo que envío (en forma de JSON)
+                data: JSON.stringify({ password: $("#pass").val() }),
+                contentType: 'application/json;charset=UTF-8',
+                dataType: 'json'
+            });
+            promise.always(async function (data) {
+                if (data.res == "delete success") {
+                    await Swal.fire({
+                        title: "¡Hecho!",
+                        text: "Tu usuario ha sido eliminado correctamente.",
+                        icon: "success"
+                    })
+                    cerrarSesion();
+                } else if (data.res == "delete error" || data.res == "delete invalid") {
+                    Swal.fire({
+                        title: "Error",
+                        text: "Se ha producido un error al eliminar tu usuario. Prueba de nuevo más tarde.",
+                        icon: "error"
+                    });
+                } else {
+                    console.log("Error");
+                }
+            })
+        }
+    });
+}
+
 function confirmChanges() {
     Swal.fire({
-        title: "¿Estás segur@?",
+        title: "¿Estás seguro?",
         text: "¿Deseas guardar los cambios?",
         icon: "warning",
         showCancelButton: true,
@@ -84,7 +127,7 @@ function confirmChanges() {
     }).then((result) => {
         if (result.isConfirmed) {
             var promise = $.ajax({
-                type: 'POST',
+                type: 'PUT',
                 url: '/change-password',
 
                 //Lo que envío (en forma de JSON)

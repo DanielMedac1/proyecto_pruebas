@@ -144,8 +144,10 @@ app.get('/userlist', (req, res) => {
 
 //Ruta para que se cierre la sesión del usuario
 app.post('/logout', (req, res) => {
+    if(!req.session) return sendResponse(res, "logout error");
     req.session.destroy();
     res.clearCookie('connect.sid', { path: '/' });
+    sendResponse(res, "logout success");
 })
 
 //Consultas BBDD para la gestión de cuentas de usuario
@@ -490,7 +492,7 @@ app.post('/reset-password', async (req, res) => {
 });
 
 //Para que el usuario pueda cambiar la contraseña (en la interfaz de CyberNiks)
-app.post('/change-password', async (req, res) => {
+app.put('/change-password', async (req, res) => {
     if (!req.session.info && (!req.session.admin || !req.session.user)) {
         console.log("No hay sesión")
         sendResponse(res, "change invalid");
@@ -523,6 +525,27 @@ app.post('/change-password', async (req, res) => {
     }
 });
 
+//Para que el usuario pueda eliminar su perfil (en la interfaz de CyberNiks)
+app.delete('/delete-user', async (req, res) => {
+    if (!req.session.info && (!req.session.admin || !req.session.user)) {
+        console.log("No hay sesión")
+        sendResponse(res, "delete invalid");
+    } else {
+        pool.getConnection(function (err, connection) {
+            connection.query('DELETE FROM usuarios WHERE username = ?', [req.session.info.username], (err, updateResult) => {
+                connection.release();
+                if (err) {
+                    console.error(err);
+                    sendResponse(res, "delete error");
+                } else {
+                    sendResponse(res, "delete success");
+                }
+            });
+        })
+    }
+});
+
+//Para que un administrador pueda eliminar un perfil (desde la interfaz de admin.)
 app.delete('/eliminar-usuario/:user', (req, res) => {
     if (!req.session.info || !req.session.admin) {
         sendResponse(res, "delete error");
@@ -545,6 +568,7 @@ app.delete('/eliminar-usuario/:user', (req, res) => {
     }
 });
 
+//Para que un administrador pueda convertir un usuario en administrador (desde la interfaz de admin.)
 app.put('/to-admin/:user', (req, res) => {
     if (!req.session.info || !req.session.admin) {
         sendResponse(res, "to-admin error");
@@ -567,6 +591,7 @@ app.put('/to-admin/:user', (req, res) => {
     }
 });
 
+//Para que un administrador pueda convertir un administrador en usuario (desde la interfaz de admin.)
 app.put('/to-user/:user', (req, res) => {
     if (!req.session.info || !req.session.admin) {
         sendResponse(res, "to-user error");
