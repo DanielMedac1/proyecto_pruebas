@@ -12686,3 +12686,7 @@ fieldset:disabled .btn {
 .swal2-html-container {
   text-align: center !important;
 }
+
+#home, #contact {
+  scroll-margin-top: 100px;
+}
