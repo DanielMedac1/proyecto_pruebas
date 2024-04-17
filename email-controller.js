@@ -145,7 +145,75 @@ async function resetMail(receptor, usuario, token) {
     console.log(info);
 }
 
+async function contactMail(name, email, subject, message) {
+    const config = {
+        host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+            user: 'infocyberniks@gmail.com',
+            pass: 'hmav lyif sxwf lpav'
+        }
+    }
+
+    const mensaje = {
+        from: name + '<' + email + '>',
+        to: 'infocyberniks@gmail.com',
+        subject: subject,
+        html: `
+        <html>
+        <head>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background-color: #fff;
+                    border-radius: 10px;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                }
+                h1 {
+                    color: #333;
+                }
+                p {
+                    color: #555;
+                }
+                .button {
+                    display: inline-block;
+                    padding: 10px 20px;
+                    background-color: greenyellow;
+                    color: #000000;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }
+                .button:hover {
+                    background-color: rgb(141, 211, 37);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>${subject}</h1>
+                <pre>${message}</pre>
+                <p><small>&copy; 2024 CyberNiks</small></p>
+            </div>
+        </body>
+        </html>
+    `
+    }
+
+    const transporter = nodemailer.createTransport(config);
+
+    const info = await transporter.sendMail(mensaje);
+
+    console.log(info);
+}
+
 module.exports = {
     confirmationMail,
-    resetMail
+    resetMail,
+    contactMail
 };
