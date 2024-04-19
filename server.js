@@ -85,6 +85,37 @@ function generateToken(length = 32) {
   return token;
 }
 
+let loginAttempts = 0; // Contador de intentos de inicio de sesión
+const maxLoginAttempts = 6; // Número máximo de intentos permitidos
+const lockoutTime = 5000; // Tiempo de bloqueo en milisegundos (30 segundos)
+
+let lastLoginAttemptTime = 0; // Inicializar el tiempo del último intento de inicio de sesión
+
+// Función para manejar los intentos de inicio de sesión
+function handleLoginAttempt(req, res) {
+  const currentTime = Date.now(); // Obtener el tiempo actual en milisegundos
+
+  // Verificar si el usuario está bloqueado
+  if (currentTime - lastLoginAttemptTime < lockoutTime) {
+    // Si el usuario está bloqueado, enviar una respuesta indicando que el inicio de sesión está bloqueado temporalmente
+    return true;
+  }
+
+  // Incrementar el contador de intentos de inicio de sesión
+  loginAttempts++;
+
+  // Verificar si se ha alcanzado el número máximo de intentos permitidos
+  if (loginAttempts >= maxLoginAttempts) {
+    // Si se alcanzó el número máximo de intentos, bloquear al usuario y actualizar el tiempo del último intento de inicio de sesión
+    lastLoginAttemptTime = currentTime;
+    loginAttempts = 0;
+    return true;
+  }
+  return false;
+  // Aquí podrías realizar el resto de la lógica de manejo del inicio de sesión, como verificar las credenciales del usuario, etc.
+  // ...
+}
+
 //Rutas de páginas
 app.get("/", (req, res) => {
   var contenido = fs.readFileSync("public/index.html", "utf8");
@@ -164,8 +195,16 @@ app.post("/logout", (req, res) => {
 
 // Para el inicio de sesión del usuario
 app.post("/iniciar", async (req, res) => {
+  var locked = handleLoginAttempt(req, res);
+  console.log(loginAttempts);
+  if (locked) {
+    sendResponse(res, "login timeout");
+    return;
+  }
+
   if (!req.body.username || !req.body.password) {
     sendResponse(res, "login failed");
+    return;
   } else {
     pool.getConnection(function (err, connection) {
       if (err) {
