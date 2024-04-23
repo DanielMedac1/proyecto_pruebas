@@ -297,5 +297,12 @@ if ($("#pass").length) {
       // Si son iguales, deshabilitar el botón
       $("#confirm").prop("disabled", true);
     }
+
+    $("#pass").keypress(function(event) {
+      if (event.which === 13) {
+        event.preventDefault(); // Evitar que el formulario se envíe al presionar Enter
+        confirmChanges();
+      }
+    });
   });
 }
