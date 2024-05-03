@@ -11,6 +11,12 @@ const {
 } = require("./email-controller.js");
 const rateLimiter = require("express-rate-limit");
 
+//Para mostrar el RSS y los artículos
+const { extract: feed_extractor } = require("@extractus/feed-extractor");
+const { extract: article_extractor } = require("article-parser");
+
+const slugify = require("slugify");
+
 //Creación de la aplicación
 const app = express();
 
@@ -93,7 +99,10 @@ function handleLoginAttempt(req, res) {
   const currentTime = Date.now(); // Obtener el tiempo actual en milisegundos
 
   // Verificar si el usuario está bloqueado
-  if (req.session.lastLoginAttemptTime && currentTime - req.session.lastLoginAttemptTime < lockoutTime) {
+  if (
+    req.session.lastLoginAttemptTime &&
+    currentTime - req.session.lastLoginAttemptTime < lockoutTime
+  ) {
     // Si el usuario está bloqueado, enviar una respuesta indicando que el inicio de sesión está bloqueado temporalmente
     return true;
   }
@@ -115,6 +124,34 @@ function handleLoginAttempt(req, res) {
   return false;
   // Aquí podrías realizar el resto de la lógica de manejo del inicio de sesión, como verificar las credenciales del usuario, etc.
   // ...
+}
+
+// Función para obtener la URL del artículo a partir del slug
+function slugToUrl(slug) {
+  const baseUrl = "https://blog.ehcgroup.io/";
+  const url = baseUrl + "article/" + slug;
+  return url;
+}
+
+// Función para generar un slug a partir del título del artículo
+function titleToSlug(titulo) {
+  // Usamos la función slugify para generar un slug limpio y legible
+  return slugify(titulo, {
+    replacement: "-", // Reemplaza espacios con guiones
+    lower: true, // Convierte todo a minúsculas
+    remove: /[*+~.()'"!:@«»¿?¡,;=&%$#/[\]\\<>{}|^`]/g, // Remueve caracteres especiales
+  });
+}
+
+// Función para formatear la fecha al formato DD/MM/YYYY
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  console.log("Date en string: " + date);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  console.log("Day: " + day + " Month: " + month + " Year: " + year);
+  return `${day}/${month}/${year}`;
 }
 
 //Rutas de páginas
@@ -181,6 +218,91 @@ app.get("/userlist", (req, res) => {
     });
   } else {
     res.redirect("/login");
+  }
+});
+
+app.get("/rss", async (req, res) => {
+  if (req.session.user || req.session.admin) {
+    try {
+      // Extrae el feed RSS
+      const result = await feed_extractor("https://blog.ehcgroup.io/feed/");
+
+      // Parámetros de paginación
+      const page = parseInt(req.query.page) || 1; // Página actual, por defecto 1
+      const pageSize = 4; // Tamaño de página
+
+      // Calcula el número total de páginas
+      const totalArticles = result.entries.length;
+      const totalPages = Math.ceil(totalArticles / pageSize);
+
+      // Calcula el índice de inicio y fin de los artículos en la página actual
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+
+      result.entries.forEach((entry) => {
+        entry.formattedDate = formatDate(entry.published);
+      });
+
+      // Obtén los artículos para la página actual
+      const articlesForPage = result.entries.slice(startIndex, endIndex);
+
+      // Envía los resultados al cliente
+      if (req.session.admin) {
+        res.render("admin/rss-admin", {
+          articles: articlesForPage,
+          page,
+          pageSize,
+          totalPages,
+          titleToSlug: titleToSlug,
+          usuario: req.session.info,
+        });
+      } else if (req.session.user) {
+        res.render("usuario/rss-user", {
+          articles: articlesForPage,
+          page,
+          pageSize,
+          totalPages,
+          titleToSlug: titleToSlug,
+          usuario: req.session.info,
+        });
+      } else {
+        res.redirect("/login");
+      }
+    } catch (error) {
+      console.error("Error al extraer el feed RSS:", error);
+      res.status(500).send("Error interno del servidor");
+    }
+  } else {
+    res.redirect("/login");
+  }
+});
+
+app.get("/article/:slug", async (req, res) => {
+  if (!req.session.user && !req.session.admin) {
+    res.redirect("/login");
+  } else {
+    try {
+      const slug = req.params.slug;
+      console.log("Slug: " + slug);
+      const articleUrl = slugToUrl(slug);
+      console.log("URL: " + articleUrl);
+      const result = await article_extractor(articleUrl);
+
+      console.log(result.published);
+
+      // Formatear la fecha
+      const formattedDate = formatDate(result.published);
+      console.log("Fecha formateada: " + formattedDate);
+
+      // Agregar la fecha formateada al objeto result
+      result.formattedDate = formattedDate;
+      console.log("Fecha formateada: " + result.formattedDate);
+
+      res.render("article", { article: result });
+    } catch (error) {
+      console.error("Error al extraer el artículo:", error);
+      res.status(500).send("Error interno del servidor");
+    }
   }
 });
 
