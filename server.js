@@ -3,6 +3,8 @@ const express = require("express");
 const fs = require("fs");
 var session = require("express-session");
 const cookieParser = require("cookie-parser");
+const path = require('path');
+const favicon = require("serve-favicon");
 const bcrypt = require("bcrypt");
 const {
   confirmationMail,
@@ -19,6 +21,8 @@ const slugify = require("slugify");
 
 //Creación de la aplicación
 const app = express();
+
+app.use(favicon(path.join(__dirname, 'public', 'assets', 'favicon.ico')));
 
 //Para los ficheros HTML
 app.use(express.static("public"));
@@ -193,7 +197,59 @@ app.get("/home", auth, (req, res) => {
   }
 });
 
-app.get("/userlist", (req, res) => {
+app.get("/cursos", auth, (req, res) => {
+  if (!req.session.user && !req.session.admin) {
+    res.redirect("/login");
+  } else {
+    var cursos = [];
+    pool.getConnection(function (err, connection) {
+      if (err) {
+        console.error("Error al obtener la conexión de la pool: ", err);
+      } else {
+        connection.query(
+          "SELECT * FROM cursos",
+          function (error, results, fields) {
+            connection.release(); // Liberar la conexión después de usarla
+            if (error) {
+              console.error("Error al ejecutar la consulta: ", error);
+            } else {
+              if (results.length > 0) {
+                results.forEach((curso) => {
+                  // Personalizar cómo deseas almacenar la información de cada curso en el array cursos
+                  let cursoPersonalizado = {
+                    id: curso.id,
+                    nombre: curso.nombre,
+                    nivel: curso.nivel,
+                    descripcion: curso.descripcion,
+                    // Agrega más atributos personalizados si es necesario
+                  };
+                  // Agregar el curso personalizado al array cursos
+                  cursos.push(cursoPersonalizado);
+                });
+              }
+              console.log(cursos);
+
+              if (req.session.admin) {
+                res.render("admin/cursos-admin", {
+                  usuario: req.session.info,
+                  curso: cursos
+                });
+              } else if (req.session.user) {
+                res.render("usuario/cursos-user", {
+                  usuario: req.session.info,
+                });
+              } else {
+                res.redirect("/login");
+              }
+            }
+          }
+        );
+      }
+    });
+  }
+});
+
+app.get("/userlist", auth, (req, res) => {
   if (req.session.admin) {
     pool.getConnection(function (err, connection) {
       if (err) {
@@ -221,7 +277,7 @@ app.get("/userlist", (req, res) => {
   }
 });
 
-app.get("/rss", async (req, res) => {
+app.get("/rss", auth, async (req, res) => {
   if (req.session.user || req.session.admin) {
     try {
       // Extrae el feed RSS
@@ -277,7 +333,7 @@ app.get("/rss", async (req, res) => {
   }
 });
 
-app.get("/article/:slug", async (req, res) => {
+app.get("/article/:slug", auth, async (req, res) => {
   if (!req.session.user && !req.session.admin) {
     res.redirect("/login");
   } else {
@@ -307,7 +363,7 @@ app.get("/article/:slug", async (req, res) => {
 });
 
 //Ruta para que se cierre la sesión del usuario
-app.post("/logout", (req, res) => {
+app.post("/logout", auth, (req, res) => {
   if (!req.session) return sendResponse(res, "logout error");
   req.session.destroy();
   res.clearCookie("connect.sid", { path: "/" });
@@ -720,7 +776,7 @@ app.post("/reset-password", async (req, res) => {
 });
 
 //Para que el usuario pueda cambiar la contraseña (en la interfaz de CyberNiks)
-app.put("/change-password", async (req, res) => {
+app.put("/change-password", auth, async (req, res) => {
   if (!req.session.info && (!req.session.admin || !req.session.user)) {
     console.log("No hay sesión");
     sendResponse(res, "change invalid");
@@ -764,7 +820,7 @@ app.put("/change-password", async (req, res) => {
 });
 
 //Para que el usuario pueda eliminar su perfil (en la interfaz de CyberNiks)
-app.delete("/delete-user", async (req, res) => {
+app.delete("/delete-user", auth, async (req, res) => {
   if (!req.session.info && (!req.session.admin || !req.session.user)) {
     console.log("No hay sesión");
     sendResponse(res, "delete invalid");
@@ -788,7 +844,7 @@ app.delete("/delete-user", async (req, res) => {
 });
 
 //Para que un administrador pueda eliminar un perfil (desde la interfaz de admin.)
-app.delete("/eliminar-usuario/:user", (req, res) => {
+app.delete("/eliminar-usuario/:user", auth, (req, res) => {
   if (!req.session.info || !req.session.admin) {
     sendResponse(res, "delete error");
   } else {
@@ -815,7 +871,7 @@ app.delete("/eliminar-usuario/:user", (req, res) => {
 });
 
 //Para que un administrador pueda convertir un usuario en administrador (desde la interfaz de admin.)
-app.put("/to-admin/:user", (req, res) => {
+app.put("/to-admin/:user", auth, (req, res) => {
   if (!req.session.info || !req.session.admin) {
     sendResponse(res, "to-admin error");
   } else {
@@ -842,7 +898,7 @@ app.put("/to-admin/:user", (req, res) => {
 });
 
 //Para que un administrador pueda convertir un administrador en usuario (desde la interfaz de admin.)
-app.put("/to-user/:user", (req, res) => {
+app.put("/to-user/:user", auth, (req, res) => {
   if (!req.session.info || !req.session.admin) {
     sendResponse(res, "to-user error");
   } else {
@@ -892,6 +948,37 @@ app.post("/contact", (req, res) => {
   contactMail(name, email, subject, message);
   sendResponse(res, "contact success");
 });
+
+app.get("/cursos/modificar", auth, (req, res) => {
+  if(req.session.admin || req.session.user){
+    pool.getConnection((err, connection) => {
+      if (err) throw err;
+      connection.query(
+        "SELECT * FROM cursos WHERE id = ?", [req.query.id],
+        (err, result) => {
+          connection.release();
+          if (!err) {
+            if (result.length > 0) {
+              const infocurso = {
+                id: result[0].id,
+                nombre: result[0].nombre,
+                nivel: result[0].nivel,
+                descripcion: result[0].descripcion
+              }
+              res.render("admin/modificar_curso-admin", {curso: infocurso});
+            } else {
+              res.redirect("/cursos");
+            }
+          } else {
+            console.log(err);
+          }
+        }
+      );
+    })
+  } else {
+    res.redirect("/login");
+  }
+})
 
 //En el caso de que vayamos a una ruta que no existe, se lanzará un error 404
 app.use((req, res, next) => {
