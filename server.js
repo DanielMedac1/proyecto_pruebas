@@ -924,6 +924,37 @@ app.put("/to-user/:user", auth, (req, res) => {
   }
 });
 
+//Para actualizar un curso
+app.put("/update-course/:id", auth, (req, res) => {
+  if (!req.session.info || !req.session.admin) {
+    sendResponse(res, "to-user error");
+  } else {
+    pool.getConnection((err, connection) => {
+      if (err) throw err;
+      var nombre = req.body.name;
+      var nivel = req.body.level;
+      var description = req.body.description;
+
+      connection.query(
+        "UPDATE cursos SET nombre = ?, nivel = ?, descripcion = ? WHERE id = ?",
+        [nombre, nivel, description, req.params.id],
+        (err, result) => {
+          connection.release();
+          if (!err) {
+            if (result.affectedRows > 0) {
+              sendResponse(res, "to-user success");
+            } else {
+              sendResponse(res, "to-user invalid");
+            }
+          } else {
+            sendResponse(res, "to-user error");
+          }
+        }
+      );
+    });
+  }
+});
+
 app.post("/contact", (req, res) => {
   const { name, email, subject, message, captcha } = req.body;
 
@@ -950,7 +981,7 @@ app.post("/contact", (req, res) => {
 });
 
 app.get("/cursos/modificar", auth, (req, res) => {
-  if(req.session.admin || req.session.user){
+  if(req.session.admin){
     pool.getConnection((err, connection) => {
       if (err) throw err;
       connection.query(
@@ -976,7 +1007,34 @@ app.get("/cursos/modificar", auth, (req, res) => {
       );
     })
   } else {
-    res.redirect("/login");
+    res.redirect("/home");
+  }
+})
+
+app.delete("/delete-course/:id", auth, (req, res) => {
+  if (!req.session.info || !req.session.admin) {
+    sendResponse(res, "delete error");
+  } else {
+    pool.getConnection((err, connection) => {
+      if (err) throw err;
+
+      connection.query(
+        "DELETE FROM cursos WHERE id = ?",
+        [req.params.id],
+        (err, result) => {
+          connection.release();
+          if (!err) {
+            if (result.affectedRows > 0) {
+              sendResponse(res, "delete success");
+            } else {
+              sendResponse(res, "delete invalid");
+            }
+          } else {
+            sendResponse(res, "delete error");
+          }
+        }
+      );
+    });
   }
 })
 
