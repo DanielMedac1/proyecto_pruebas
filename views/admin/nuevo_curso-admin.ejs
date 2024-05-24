@@ -8,7 +8,7 @@
     />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>CyberNiks - Modificar curso</title>
+    <title>CyberNiks - Crear curso</title>
     <!-- Favicon-->
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <!-- Core theme CSS (includes Bootstrap)-->
@@ -49,23 +49,12 @@
         <div class="row justify-content-center">
           <div class="col-lg-6">
             <div class="text-center">
-              <h1 class="pt-3">Modificar curso</h1>
-            </div>
-            <div>
-              <label for="id">Id del curso:</label>
-              <input
-                disabled
-                value="<%= curso.id %>"
-                type="number"
-                class="form-control"
-                maxlength="30"
-                id="id"
-              />
+              <h1 class="pt-3">Crear curso</h1>
             </div>
             <div class="mt-4">
               <label for="name">Nombre del curso:</label>
               <input
-                value="<%= curso.nombre %>"
+                placeholder="Introduce aquí el nombre del curso..."
                 type="text"
                 class="form-control"
                 maxlength="75"
@@ -75,40 +64,19 @@
             <div class="mt-4">
               <label for="name">Nivel:</label>
               <select class="form-select" aria-label="Nivel" id="nivelSelect">
-                <% switch (curso.nivel) { case 1: %>
-                <option value="1" selected>Junior</option>
-                <option value="2">Intermedio</option>
-                <option value="3">Senior</option>
-                <option disabled>----------</option>
-                <option value="0">No especificado</option>
-                <% break; case 2: %>
-                <option value="1">Junior</option>
-                <option value="2" selected>Intermedio</option>
-                <option value="3">Senior</option>
-                <option disabled>----------</option>
-                <option value="0">No especificado</option>
-                <% break; case 3: %>
-                <option value="1">Junior</option>
-                <option value="2">Intermedio</option>
-                <option value="3" selected>Senior</option>
-                <option disabled>----------</option>
-                <option value="0">No especificado</option>
-                <% break; default: %>
                 <option value="1">Junior</option>
                 <option value="2">Intermedio</option>
                 <option value="3">Senior</option>
                 <option disabled>----------</option>
-                <option value="0" selected>No especificado</option>
-                <% } %>
+                <option value="0">No especificado</option>
               </select>
             </div>
             <div class="mt-4">
               <label for="description">Descripción:</label>
-              <textarea class="form-control" rows="4" maxlength="150" id="description"><%= curso.descripcion %></textarea>
+              <textarea class="form-control" rows="4" maxlength="150" id="description" placeholder="Introduce aquí la descripción..."></textarea>
             </div>
             <div class="my-4">
-              <button disabled class="btn btn-sm btn-primary" id="submit" onclick="guardarCambios(<%= curso.id %>)">Guardar cambios</button>
-              <button class="btn btn-sm btn-danger" id="delete" onclick="borrarCurso(<%= curso.id %>)">Eliminar curso</button></button>
+              <button disabled class="btn btn-sm btn-primary" id="create" onclick="crearCurso()">Guardar cambios</button>
           </div>
           </div>
         </div>

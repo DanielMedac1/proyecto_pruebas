@@ -197,6 +197,14 @@ app.get("/home", auth, (req, res) => {
   }
 });
 
+app.get("/cursos/crear", auth, (req, res) => {
+  if (req.session.admin) {
+    res.render("admin/nuevo_curso-admin");
+  } else {
+    res.redirect("/home");
+  }
+});
+
 app.get("/cursos", auth, (req, res) => {
   if (!req.session.user && !req.session.admin) {
     res.redirect("/login");
@@ -927,13 +935,22 @@ app.put("/to-user/:user", auth, (req, res) => {
 //Para actualizar un curso
 app.put("/update-course/:id", auth, (req, res) => {
   if (!req.session.info || !req.session.admin) {
-    sendResponse(res, "to-user error");
+    sendResponse(res, "update error");
   } else {
     pool.getConnection((err, connection) => {
       if (err) throw err;
       var nombre = req.body.name;
       var nivel = req.body.level;
       var description = req.body.description;
+
+      if (
+        !nombre || nombre.length > 75 ||
+        !nivel || isNaN(nivel) ||
+        !description || description.length > 150
+      ) {
+        sendResponse(res, "update error");
+        return;
+      }
 
       connection.query(
         "UPDATE cursos SET nombre = ?, nivel = ?, descripcion = ? WHERE id = ?",
@@ -942,12 +959,53 @@ app.put("/update-course/:id", auth, (req, res) => {
           connection.release();
           if (!err) {
             if (result.affectedRows > 0) {
-              sendResponse(res, "to-user success");
+              sendResponse(res, "update success");
             } else {
-              sendResponse(res, "to-user invalid");
+              sendResponse(res, "update invalid");
             }
           } else {
-            sendResponse(res, "to-user error");
+            sendResponse(res, "update error");
+          }
+        }
+      );
+    });
+  }
+});
+
+
+//Para crear un curso
+app.put("/create-course", auth, (req, res) => {
+  if (!req.session.info || !req.session.admin) {
+    sendResponse(res, "create error");
+  } else {
+    pool.getConnection((err, connection) => {
+      if (err) throw err;
+      var nombre = req.body.name;
+      var nivel = req.body.level;
+      var description = req.body.description;
+
+      if (
+        !nombre || nombre.length > 75 ||
+        !nivel || isNaN(nivel) ||
+        !description || description.length > 150
+      ) {
+        sendResponse(res, "create error");
+        return;
+      }
+
+      connection.query(
+        "INSERT INTO cursos(nombre, nivel, descripcion) VALUES (?, ?, ?)",
+        [nombre, nivel, description],
+        (err, result) => {
+          connection.release();
+          if (!err) {
+            if (result.affectedRows > 0) {
+              sendResponse(res, "create success");
+            } else {
+              sendResponse(res, "create invalid");
+            }
+          } else {
+            sendResponse(res, "create error");
           }
         }
       );
