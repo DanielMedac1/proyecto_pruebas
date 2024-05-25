@@ -58,7 +58,7 @@ async function confirmationMail(receptor, usuario, token) {
                 <p><b>E-mail:</b> ${receptor}</p>
                 <br>
                 <p>Para validar tu dirección de correo electrónico, por favor haz clic en el enlace de debajo:</p>
-                <a class="button" href="http://localhost:3005/confirm?token=${token}"><b>Confirmar mi cuenta</b></a>
+                <a class="button" href="https://prueba-cyberniks.onrender.com/confirm?token=${token}"><b>Confirmar mi cuenta</b></a>
                 <p>Atentamente,<br><i>el equipo de CyberNiks</i></p>
                 <p><small>&copy; 2024 CyberNiks</small></p>
             </div>
@@ -129,7 +129,7 @@ async function resetMail(receptor, usuario, token) {
                 <p>Hola, <b>${usuario}</b>.</p>
                 <p>Hemos recibido una petición para restablecer la contraseña de tu cuenta de CyberNiks.</p>
                 <p>Para poder restablecer tu contraseña, por favor haz clic en el enlace de debajo:</p>
-                <a class="button" href="http://localhost:3005/reset?token=${token}"><b>Restablece tu contraseña</b></a>
+                <a class="button" href="https://prueba-cyberniks.onrender.com/reset?token=${token}"><b>Restablece tu contraseña</b></a>
                 <p>Atentamente,<br><i>el equipo de CyberNiks</i></p>
                 <p><small>&copy; 2024 CyberNiks</small></p>
             </div>
