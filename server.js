@@ -245,6 +245,7 @@ app.get("/cursos", auth, (req, res) => {
               } else if (req.session.user) {
                 res.render("usuario/cursos-user", {
                   usuario: req.session.info,
+                  curso: cursos
                 });
               } else {
                 res.redirect("/login");
