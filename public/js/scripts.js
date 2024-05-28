@@ -240,7 +240,7 @@ if ($("#pass").length) {
   var passSpecialLi = document.getElementById("pass-special");
 
   var passPattern =
-    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_.])[A-Za-z\d!@#$%^&*_.]{8,}$/;
+  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…])[\w !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]{8,}$/;
   $("#pass").on("input", function () {
     if ($(this).val().trim().length >= 8) {
       passLengthLi.classList.remove("text-danger");
@@ -278,7 +278,7 @@ if ($("#pass").length) {
     }
 
     // Verificar si la contraseña contiene al menos un carácter especial
-    if (/[!@#$%^&*_.]/.test($(this).val().trim())) {
+    if (/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]/.test($(this).val().trim())) {
       passSpecialLi.classList.remove("text-danger");
       passSpecialLi.classList.add("text-primary");
     } else {

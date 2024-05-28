@@ -169,7 +169,7 @@ function validarCamposRegister() {
     }
 
     // Verificar si la contraseña contiene al menos un carácter especial
-    if (/[!@#$%^&*_,.-]/.test(contrasena.value.trim())) {
+    if (/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]/.test(contrasena.value.trim())) {
         passSpecialLi.classList.remove("text-danger");
         passSpecialLi.classList.add("text-primary");
     } else {
@@ -178,7 +178,7 @@ function validarCamposRegister() {
     }
 
     // Verificar si todos los campos tienen algún valor y si el email tiene el formato correcto
-    var passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_,.-])[A-Za-z\d!@#$%^&*_,.-]{8,}$/;
+    var passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…])[\w !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]{8,}$/;
     if (contrasena.value.trim() !== "" && passPattern.test(contrasena.value.trim())) {
         // Si todos los campos tienen valor y el email tiene el formato correcto, habilitar el botón
         button.disabled = false;
