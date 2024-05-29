@@ -785,7 +785,7 @@ app.post("/reset-password", async (req, res) => {
 });
 
 //Para que el usuario pueda cambiar la contraseña (en la interfaz de CyberNiks)
-app.put("/change-password", auth, async (req, res) => {
+/* app.put("/change-password", auth, async (req, res) => {
   if (!req.session.info && (!req.session.admin || !req.session.user)) {
     console.log("No hay sesión");
     sendResponse(res, "change invalid");
@@ -826,7 +826,83 @@ app.put("/change-password", auth, async (req, res) => {
       );
     });
   }
+}); */
+
+app.put("/change-password", auth, async (req, res) => {
+  if (!req.session.info && (!req.session.admin || !req.session.user)) {
+    console.log("No hay sesión");
+    sendResponse(res, "change invalid");
+    return;
+  }
+
+  const currentPassword = req.body.currentPassword;
+  const newPassword = req.body.newPassword;
+
+  if (!currentPassword || !newPassword) {
+    sendResponse(res, "change invalid");
+    return;
+  }
+
+  if (
+    newPassword == "" ||
+    newPassword.length > 50 ||
+    !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…])[\w !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]{8,}$/.test(
+      newPassword
+    )
+  ) {
+    sendResponse(res, "change invalid");
+    return;
+  }
+
+  pool.getConnection(function (err, connection) {
+    if (err) {
+      console.error(err);
+      sendResponse(res, "connection error");
+      return;
+    }
+
+    connection.query(
+      "SELECT * FROM usuarios WHERE username = ?",
+      [req.session.info.username],
+      async (err, result) => {
+        if (err) {
+          connection.release();
+          console.error(err);
+          sendResponse(res, "check error");
+          return;
+        }
+
+        const passwordMatch = await bcrypt.compare(
+          currentPassword,
+          result[0].password
+        );
+
+        if (!passwordMatch) {
+          connection.release();
+          sendResponse(res, "check incorrect");
+          return;
+        }
+
+        const hashedPassword = await encrypt(newPassword);
+
+        connection.query(
+          "UPDATE usuarios SET password = ? WHERE username = ?",
+          [hashedPassword, req.session.info.username],
+          (err, updateResult) => {
+            connection.release();
+            if (err) {
+              console.error(err);
+              sendResponse(res, "change error");
+            } else {
+              sendResponse(res, "change success");
+            }
+          }
+        );
+      }
+    );
+  });
 });
+
 
 //Para que el usuario pueda eliminar su perfil (en la interfaz de CyberNiks)
 app.delete("/delete-user", auth, async (req, res) => {

@@ -48,10 +48,10 @@
                         <input disabled value="<%= usuario.email %>" type="mail" class="form-control" maxlength="30"
                             id="user">
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-4" id="passDiv" style="display: none">
                         <label for="pwd">Contraseña:</label>
                         <div class="input-group">
-                            <input disabled value="<%= usuario.password %>" type="password" class="form-control"
+                            <input disabled type="password" class="form-control"
                                 maxlength="50" placeholder="Introduce aquí tu nueva contraseña..." id="pass"><span
                                 class="mostrar-pass input-group-text" onclick="togglePasswordVisibility()"
                                 title="Mostrar contraseña"><svg xmlns="http://www.w3.org/2000/svg" width="16"

@@ -53,6 +53,7 @@ function togglePasswordVisibility() {
 }
 
 function toggleChangePassword() {
+  $("#passDiv").show();
   $("#changePass").hide();
   $("#confirm").show();
   $("#cancel").show();
@@ -62,6 +63,7 @@ function toggleChangePassword() {
 }
 
 function cancelChangePassword() {
+  $("#passDiv").hide();
   $("#changePass").show();
   $("#confirm").hide();
   $("#cancel").hide();
@@ -115,6 +117,67 @@ function deleteUser() {
 
 function confirmChanges() {
   Swal.fire({
+    title: "Introduce tu contraseña",
+    text: "Para asegurarnos de que eres tú, introduce tu contraseña para confirmar los cambios.",
+    input: "password",
+    inputAttributes: {
+      autocapitalize: "off",
+      autocomplete: "new-password", // Desactiva la función de autocompletar
+    },
+    inputAttributes: {
+      autocapitalize: "off",
+    },
+    showCancelButton: true,
+    confirmButtonText: "Confirmar",
+    showLoaderOnConfirm: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      var promise = $.ajax({
+        type: "PUT",
+        url: "/change-password",
+        data: JSON.stringify({
+          currentPassword: result.value,
+          newPassword: $("#pass").val(),
+        }),
+        contentType: "application/json;charset=UTF-8",
+        dataType: "json",
+      });
+      promise.always(function (data) {
+        if (data.res == "check error" || data.res == "check invalid") {
+          Swal.fire({
+            title: "Error",
+            text: "Se ha producido un error. Prueba más tarde.",
+            icon: "error",
+          });
+        } else if (data.res == "check incorrect") {
+          Swal.fire({
+            title: "Contraseña incorrecta",
+            text: "La contraseña es incorrecta.",
+            icon: "error",
+          });
+        } else if (data.res == "change error" || data.res == "change invalid") {
+          Swal.fire({
+            title: "Se ha producido un error",
+            text: "Error",
+            icon: "error",
+          });
+        } else if (data.res == "change success") {
+          Swal.fire({
+            title: "Bien hecho",
+            text: "La contraseña ha cambiado correctamente.",
+            icon: "success",
+          }).then((result) => {
+            if (result.isConfirmed || result.isDismissed) {
+              location.reload();
+            }
+          });
+        } else {
+          alert("Error");
+        }
+      });
+    }
+  });
+  /* Swal.fire({
     title: "¿Estás seguro?",
     text: "¿Deseas guardar los cambios?",
     icon: "warning",
@@ -142,6 +205,7 @@ function confirmChanges() {
             icon: "success",
           });
           contrasena = $("#pass").val();
+          $("#passDiv").hide();
           $("#changePass").show();
           $("#confirm").hide();
           $("#cancel").hide();
@@ -165,7 +229,7 @@ function confirmChanges() {
         }
       });
     }
-  });
+  }); */
 }
 
 function contactMail() {
@@ -240,7 +304,7 @@ if ($("#pass").length) {
   var passSpecialLi = document.getElementById("pass-special");
 
   var passPattern =
-  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…])[\w !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]{8,}$/;
+    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…])[\w !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]{8,}$/;
   $("#pass").on("input", function () {
     if ($(this).val().trim().length >= 8) {
       passLengthLi.classList.remove("text-danger");
@@ -278,7 +342,11 @@ if ($("#pass").length) {
     }
 
     // Verificar si la contraseña contiene al menos un carácter especial
-    if (/[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]/.test($(this).val().trim())) {
+    if (
+      /[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]/.test(
+        $(this).val().trim()
+      )
+    ) {
       passSpecialLi.classList.remove("text-danger");
       passSpecialLi.classList.add("text-primary");
     } else {
@@ -298,7 +366,7 @@ if ($("#pass").length) {
       $("#confirm").prop("disabled", true);
     }
 
-    $("#pass").keypress(function(event) {
+    $("#pass").keypress(function (event) {
       if (event.which === 13) {
         event.preventDefault(); // Evitar que el formulario se envíe al presionar Enter
         confirmChanges();
