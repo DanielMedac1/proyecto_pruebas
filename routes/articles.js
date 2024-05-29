@@ -21,8 +21,8 @@ router.get("/new", auth, (req, res) => {
   });
   
 
-router.get("/:id", auth, async (req, res) => {
-  const article = await Article.findById(req.params.id);
+router.get("/:slug", auth, async (req, res) => {
+  const article = await Article.findOne({ slug: req.params.slug });
   if (req.session && req.session.admin) {
     res.render("blog/admin/show_admin", { article: article });
     if (article == null) res.redirect("/articles");
@@ -58,10 +58,21 @@ router.post("/", auth, async (req, res) => {
         res.redirect(`/articles/${article.id}`);
       })
       .catch((err) => {
+        console.error("Error saving the article:", err);
         res.render("blog/admin/new-article", { article: article });
       });
   } else {
     res.send("Error");
   }
 });
+
+router.delete("/:id", auth, async (req, res) => {
+  if (req.session && req.session.admin) {
+    await Article.findByIdAndDelete(req.params.id);
+    res.redirect("/articles");
+  } else {
+    res.send("Error");
+  }
+});
+
 module.exports = router;

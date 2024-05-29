@@ -20,6 +20,7 @@ const { extract: article_extractor } = require("article-parser");
 const articleRouter = require("./routes/articles");
 
 const slugify = require("slugify");
+const methodOverride = require("method-override");
 
 //Creación de la aplicación
 const app = express();
@@ -51,6 +52,7 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+app.use(methodOverride("_method"));
 app.use('/articles', articleRouter);
 
 //Conexión a la base de datos
@@ -1187,5 +1189,5 @@ app.use((req, res, next) => {
 //Servidor
 const port = 3005;
 app.listen(port, () => {
-  console.log(`Aplicación escuchando en el puerto ${port}`);
+  console.log(`Aplicación funcionando en http://localhost:${port}`);
 });
