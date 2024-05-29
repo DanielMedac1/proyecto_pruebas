@@ -17,6 +17,8 @@ const rateLimiter = require("express-rate-limit");
 const { extract: feed_extractor } = require("@extractus/feed-extractor");
 const { extract: article_extractor } = require("article-parser");
 
+const articleRouter = require("./routes/articles");
+
 const slugify = require("slugify");
 
 //Creación de la aplicación
@@ -48,9 +50,11 @@ app.use(
   })
 );
 
+app.use(express.urlencoded({ extended: false }));
+app.use('/articles', articleRouter);
+
 //Conexión a la base de datos
 const pool = require("./db/db_sql.js");
-const uri = require("./db/db_mongo.js");
 const { stringify } = require("querystring");
 
 //Middleware de autenticación
@@ -342,7 +346,7 @@ app.get("/rss", auth, async (req, res) => {
   }
 });
 
-app.get("/article/:slug", auth, async (req, res) => {
+app.get("/rss/:slug", auth, async (req, res) => {
   if (!req.session.user && !req.session.admin) {
     res.redirect("/login");
   } else {
