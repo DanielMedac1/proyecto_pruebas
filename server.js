@@ -380,6 +380,8 @@ app.get("/rss/:slug", auth, async (req, res) => {
 //Ruta para que se cierre la sesión del usuario
 app.post("/logout", auth, (req, res) => {
   if (!req.session) return sendResponse(res, "logout error");
+  req.session.admin = false;
+  req.session.user = false;
   req.session.destroy();
   res.clearCookie("connect.sid", { path: "/" });
   sendResponse(res, "logout success");
