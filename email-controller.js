@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 
+//Función para el mail de confirmación de la cuenta
 async function confirmationMail(receptor, usuario, token) {
     const config = {
         host: 'smtp.gmail.com',
@@ -74,6 +75,7 @@ async function confirmationMail(receptor, usuario, token) {
     console.log(info);
 }
 
+//Función para el mail de restablecimiento de contraseña
 async function resetMail(receptor, usuario, token) {
     const config = {
         host: 'smtp.gmail.com',
@@ -145,6 +147,7 @@ async function resetMail(receptor, usuario, token) {
     console.log(info);
 }
 
+//Función para el mail de contacto
 async function contactMail(name, email, subject, message) {
     const config = {
         host: 'smtp.gmail.com',

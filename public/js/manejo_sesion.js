@@ -299,27 +299,6 @@ function validarCamposLogin() {
   }
 }
 
-/* function validarCamposRegister() {
-    // Normas de la contraseña:
-    // 1. Al menos 8 caracteres de longitud
-    // 2. Al menos una letra mayúscula (A-Z)
-    // 3. Al menos una letra minúscula (a-z)
-    // 4. Al menos un dígito (0-9)
-    // 5. Al menos un carácter especial (por ejemplo, ! @ # $ % ^ & *)
-    var passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[A-Za-z\d!@#$%^&*_]{8,}$/;
-
-    // Expresión regular para validar el formato del email
-    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    // Verificar si todos los campos tienen algún valor y si el email tiene el formato correcto
-    if (usuario.value.trim() !== "" && email.value.trim() !== "" && contrasena.value.trim() !== "" && emailPattern.test(email.value.trim()) && passPattern.test(contrasena.value.trim())) {
-        // Si todos los campos tienen valor y el email tiene el formato correcto, habilitar el botón
-        button.disabled = false;
-    } else {
-        // Si algún campo está vacío o el email no tiene el formato correcto, deshabilitar el botón
-        button.disabled = true;
-    }
-} */
 
 function validarCamposRegister() {
   // Normas de la contraseña:

@@ -17,8 +17,10 @@ const rateLimiter = require("express-rate-limit");
 const { extract: feed_extractor } = require("@extractus/feed-extractor");
 const { extract: article_extractor } = require("article-parser");
 
+//Para las rutas en la parte del blog
 const articleRouter = require("./routes/articles");
 
+//Para la creación de slugs
 const slugify = require("slugify");
 const methodOverride = require("method-override");
 
@@ -35,6 +37,7 @@ app.use("/styles", express.static(__dirname + "/public/css"));
 app.set("views", "views");
 app.set("view engine", "ejs");
 
+//Para el JSON y las Cookies
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -51,6 +54,7 @@ app.use(
   })
 );
 
+//Aquí usamos las rutas para la parte del blog
 app.use(express.urlencoded({ extended: false }));
 app.use(methodOverride("_method"));
 app.use('/articles', articleRouter);
@@ -101,19 +105,18 @@ function generateToken(length = 32) {
   return token;
 }
 
-const lockoutTime = 10000; // Tiempo de bloqueo en milisegundos (30 segundos)
+const lockoutTime = 10000; // Tiempo de bloqueo en milisegundos
 
 const maxLoginAttempts = 6;
+
 // Función para manejar los intentos de inicio de sesión
 function handleLoginAttempt(req, res) {
-  const currentTime = Date.now(); // Obtener el tiempo actual en milisegundos
+  const currentTime = Date.now();
 
-  // Verificar si el usuario está bloqueado
   if (
     req.session.lastLoginAttemptTime &&
     currentTime - req.session.lastLoginAttemptTime < lockoutTime
   ) {
-    // Si el usuario está bloqueado, enviar una respuesta indicando que el inicio de sesión está bloqueado temporalmente
     return true;
   }
 
@@ -121,19 +124,14 @@ function handleLoginAttempt(req, res) {
     req.session.loginAttempts = 0;
   }
 
-  // Incrementar el contador de intentos de inicio de sesión
   req.session.loginAttempts++;
 
-  // Verificar si se ha alcanzado el número máximo de intentos permitidos
   if (req.session.loginAttempts >= maxLoginAttempts) {
-    // Si se alcanzó el número máximo de intentos, bloquear al usuario y actualizar el tiempo del último intento de inicio de sesión
     req.session.lastLoginAttemptTime = currentTime;
     req.session.loginAttempts = 0;
     return true;
   }
   return false;
-  // Aquí podrías realizar el resto de la lógica de manejo del inicio de sesión, como verificar las credenciales del usuario, etc.
-  // ...
 }
 
 // Función para obtener la URL del artículo a partir del slug
@@ -145,15 +143,14 @@ function slugToUrl(slug) {
 
 // Función para generar un slug a partir del título del artículo
 function titleToSlug(titulo) {
-  // Usamos la función slugify para generar un slug limpio y legible
   return slugify(titulo, {
-    replacement: "-", // Reemplaza espacios con guiones
-    lower: true, // Convierte todo a minúsculas
-    remove: /[*+~.()'"!:@«»¿?¡,;=&%$#/[\]\\<>{}|^`]/g, // Remueve caracteres especiales
+    replacement: "-",
+    lower: true,
+    remove: /[*+~.()'"!:@«»¿?¡,;=&%$#/[\]\\<>{}|^`]/g,
   });
 }
 
-// Función para formatear la fecha al formato DD/MM/YYYY
+// Función para formatear la fecha al formato dia/mes/año
 function formatDate(dateString) {
   const date = new Date(dateString);
   console.log("Date en string: " + date);
@@ -193,6 +190,8 @@ app.get("/profile", auth, (req, res) => {
     res.redirect("/login");
   }
 });
+
+//Página de inicio en EJS (dependiendo del rol muestra una página u otra)
 app.get("/home", auth, (req, res) => {
   if (req.session.admin) {
     res.render("admin/home-admin", { usuario: req.session.info });
@@ -203,6 +202,7 @@ app.get("/home", auth, (req, res) => {
   }
 });
 
+//Página para crear un nuevo curso
 app.get("/cursos/crear", auth, (req, res) => {
   if (req.session.admin) {
     res.render("admin/nuevo_curso-admin");
@@ -211,6 +211,7 @@ app.get("/cursos/crear", auth, (req, res) => {
   }
 });
 
+//Página para ver todos los cursos (depende del rol, muestra una página u otra)
 app.get("/cursos", auth, (req, res) => {
   if (!req.session.user && !req.session.admin) {
     res.redirect("/login");
@@ -229,15 +230,12 @@ app.get("/cursos", auth, (req, res) => {
             } else {
               if (results.length > 0) {
                 results.forEach((curso) => {
-                  // Personalizar cómo deseas almacenar la información de cada curso en el array cursos
                   let cursoPersonalizado = {
                     id: curso.id,
                     nombre: curso.nombre,
                     nivel: curso.nivel,
                     descripcion: curso.descripcion,
-                    // Agrega más atributos personalizados si es necesario
                   };
-                  // Agregar el curso personalizado al array cursos
                   cursos.push(cursoPersonalizado);
                 });
               }
@@ -264,6 +262,7 @@ app.get("/cursos", auth, (req, res) => {
   }
 });
 
+//Mostrar lista de usuarios (solo para el admin)
 app.get("/userlist", auth, (req, res) => {
   if (req.session.admin) {
     pool.getConnection(function (err, connection) {
@@ -292,21 +291,20 @@ app.get("/userlist", auth, (req, res) => {
   }
 });
 
+//Mostrar lista de RSS (igual tanto para usuario como administrador)
 app.get("/rss", auth, async (req, res) => {
   if (req.session.user || req.session.admin) {
     try {
-      // Extrae el feed RSS
+      // Aquí almacenamos el RSS
       const result = await feed_extractor("https://blog.ehcgroup.io/feed/");
 
-      // Parámetros de paginación
-      const page = parseInt(req.query.page) || 1; // Página actual, por defecto 1
+      // Para la paginación
+      const page = parseInt(req.query.page) || 1; // Página actual
       const pageSize = 4; // Tamaño de página
 
-      // Calcula el número total de páginas
       const totalArticles = result.entries.length;
       const totalPages = Math.ceil(totalArticles / pageSize);
 
-      // Calcula el índice de inicio y fin de los artículos en la página actual
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize;
 
@@ -314,10 +312,9 @@ app.get("/rss", auth, async (req, res) => {
         entry.formattedDate = formatDate(entry.published);
       });
 
-      // Obtén los artículos para la página actual
+      // Aquí almacenamos los artículos por página
       const articlesForPage = result.entries.slice(startIndex, endIndex);
 
-      // Envía los resultados al cliente
       if (req.session.admin) {
         res.render("admin/rss-admin", {
           articles: articlesForPage,
@@ -348,6 +345,7 @@ app.get("/rss", auth, async (req, res) => {
   }
 });
 
+//Ruta para ver un artículo (hacemos uso de slugs para que sea más cómodo)
 app.get("/rss/:slug", auth, async (req, res) => {
   if (!req.session.user && !req.session.admin) {
     res.redirect("/login");
@@ -380,8 +378,12 @@ app.get("/rss/:slug", auth, async (req, res) => {
 //Ruta para que se cierre la sesión del usuario
 app.post("/logout", auth, (req, res) => {
   if (!req.session) return sendResponse(res, "logout error");
-  req.session.admin = false;
-  req.session.user = false;
+  req.session.admin = null;
+  req.session.user = null;
+  req.session.info = null;
+  console.log("Estado de usuario: " + req.session.user);
+  console.log("Estado de administrador: " + req.session.admin);
+  console.log("Información de usuario: " + req.session.info);
   req.session.destroy();
   res.clearCookie("connect.sid", { path: "/" });
   sendResponse(res, "logout success");
@@ -521,6 +523,8 @@ app.post("/iniciar", async (req, res) => {
                   }
                 });
               }
+              console.log("Estado de usuario: " + req.session.user);
+              console.log("Estado de administrador: " + req.session.admin);
               sendResponse(res, "login true");
             }
           }
@@ -747,18 +751,6 @@ app.post("/reset-password", async (req, res) => {
 
   const hashedPassword = await encrypt(password);
 
-  /* pool.getConnection(function (err, connection) {
-        connection.query('UPDATE usuarios SET password = ? WHERE username = ?', [hashedPassword, req.session.info.username], (err, updateResult) => {
-            connection.release();
-            if (err) {
-                console.error(err);
-                sendResponse(res, "change error");
-            } else {
-                sendResponse(res, "change success");
-            }
-        });
-    }) */
-
   pool.getConnection(function (err, connection) {
     connection.query(
       "SELECT * FROM usuarios WHERE reset_token = ?",
@@ -793,49 +785,6 @@ app.post("/reset-password", async (req, res) => {
 });
 
 //Para que el usuario pueda cambiar la contraseña (en la interfaz de CyberNiks)
-/* app.put("/change-password", auth, async (req, res) => {
-  if (!req.session.info && (!req.session.admin || !req.session.user)) {
-    console.log("No hay sesión");
-    sendResponse(res, "change invalid");
-  } else {
-    const password = req.body.password;
-
-    if (!password) {
-      sendResponse(res, "change invalid");
-      return;
-    }
-
-    if (
-      password == "" ||
-      password.length > 50 ||
-      !/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…])[\w !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~¿¡ºª€£¥©®™§±°`´¨^•∗¶…]{8,}$/.test(
-        password
-      )
-    ) {
-      sendResponse(res, "change invalid");
-      return;
-    }
-
-    const hashedPassword = await encrypt(password);
-
-    pool.getConnection(function (err, connection) {
-      connection.query(
-        "UPDATE usuarios SET password = ? WHERE username = ?",
-        [hashedPassword, req.session.info.username],
-        (err, updateResult) => {
-          connection.release();
-          if (err) {
-            console.error(err);
-            sendResponse(res, "change error");
-          } else {
-            sendResponse(res, "change success");
-          }
-        }
-      );
-    });
-  }
-}); */
-
 app.put("/change-password", auth, async (req, res) => {
   if (!req.session.info && (!req.session.admin || !req.session.user)) {
     console.log("No hay sesión");
@@ -1098,6 +1047,7 @@ app.put("/create-course", auth, (req, res) => {
   }
 });
 
+//Para el formulario de contacto del index
 app.post("/contact", (req, res) => {
   const { name, email, subject, message, captcha } = req.body;
 
@@ -1123,6 +1073,7 @@ app.post("/contact", (req, res) => {
   sendResponse(res, "contact success");
 });
 
+//Para el formulario de modificar un curso
 app.get("/cursos/modificar", auth, (req, res) => {
   if(req.session.admin){
     pool.getConnection((err, connection) => {
@@ -1154,6 +1105,7 @@ app.get("/cursos/modificar", auth, (req, res) => {
   }
 })
 
+//Para borrar un curso
 app.delete("/delete-course/:id", auth, (req, res) => {
   if (!req.session.info || !req.session.admin) {
     sendResponse(res, "delete error");

@@ -3,12 +3,8 @@
  */
 function animar(selector, animacion) {
   observer = new IntersectionObserver((entries) => {
-    // Recorrer las entradas recibidas
     entries.forEach((entry) => {
-      // Está visible en el viewport
       if (entry.intersectionRatio > 0) {
-        // entry.target es el elemento que se está observando
-        // Agregar la clase para animar
         entry.target.classList.add("animate__animated");
         entry.target.classList.add(animacion);
         // Dejar de observar
@@ -16,7 +12,6 @@ function animar(selector, animacion) {
       }
     });
   });
-  // Observar elemento a animar
   observer.observe(document.querySelector(selector));
 }
 
@@ -122,7 +117,7 @@ function confirmChanges() {
     input: "password",
     inputAttributes: {
       autocapitalize: "off",
-      autocomplete: "new-password", // Desactiva la función de autocompletar
+      autocomplete: "new-password",
     },
     inputAttributes: {
       autocapitalize: "off",
@@ -177,59 +172,6 @@ function confirmChanges() {
       });
     }
   });
-  /* Swal.fire({
-    title: "¿Estás seguro?",
-    text: "¿Deseas guardar los cambios?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Cambiar",
-    cancelButtonText: "Cancelar",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      var promise = $.ajax({
-        type: "PUT",
-        url: "/change-password",
-
-        //Lo que envío (en forma de JSON)
-        data: JSON.stringify({ password: $("#pass").val() }),
-        contentType: "application/json;charset=UTF-8",
-        dataType: "json",
-      });
-      promise.always(function (data) {
-        if (data.res == "change success") {
-          Swal.fire({
-            title: "¡Hecho!",
-            text: "Has cambiado tu contraseña correctamente.",
-            icon: "success",
-          });
-          contrasena = $("#pass").val();
-          $("#passDiv").hide();
-          $("#changePass").show();
-          $("#confirm").hide();
-          $("#cancel").hide();
-          $("#requisitos").hide();
-          $("#pass").prop("disabled", true);
-          $("#confirm").prop("disabled", true);
-        } else if (data.res == "change error") {
-          Swal.fire({
-            title: "Error",
-            text: "Se ha producido un error al cambiar tu contraseña. Prueba de nuevo más tarde.",
-            icon: "error",
-          });
-        } else if (data.res == "change invalid") {
-          Swal.fire({
-            title: "Error",
-            text: "La contraseña no cumple con los requisitos.",
-            icon: "error",
-          });
-        } else {
-          console.log("Error");
-        }
-      });
-    }
-  }); */
 }
 
 function contactMail() {
@@ -314,7 +256,7 @@ if ($("#pass").length) {
       passLengthLi.classList.add("text-danger");
     }
 
-    // Verificar si la contraseña contiene al menos una letra mayúscula (A-Z)
+    // Verificar si la contraseña contiene al menos una letra mayúscula
     if (/[A-Z]/.test($(this).val().trim())) {
       passUpperLi.classList.remove("text-danger");
       passUpperLi.classList.add("text-primary");
@@ -323,7 +265,7 @@ if ($("#pass").length) {
       passUpperLi.classList.add("text-danger");
     }
 
-    // Verificar si la contraseña contiene al menos una letra minúscula (a-z)
+    // Verificar si la contraseña contiene al menos una letra minúscula
     if (/[a-z]/.test($(this).val().trim())) {
       passLowerLi.classList.remove("text-danger");
       passLowerLi.classList.add("text-primary");
@@ -332,7 +274,7 @@ if ($("#pass").length) {
       passLowerLi.classList.add("text-danger");
     }
 
-    // Verificar si la contraseña contiene al menos un dígito (0-9)
+    // Verificar si la contraseña contiene al menos un dígito
     if (/\d/.test($(this).val().trim())) {
       passDigitLi.classList.remove("text-danger");
       passDigitLi.classList.add("text-primary");
@@ -368,7 +310,7 @@ if ($("#pass").length) {
 
     $("#pass").keypress(function (event) {
       if (event.which === 13) {
-        event.preventDefault(); // Evitar que el formulario se envíe al presionar Enter
+        event.preventDefault();
         confirmChanges();
       }
     });
